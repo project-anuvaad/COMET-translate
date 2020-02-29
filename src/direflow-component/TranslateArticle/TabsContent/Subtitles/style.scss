@@ -1,0 +1,17 @@
+
+.speakers-box-container {
+    position: relative;
+    background-color: #111111;
+    z-index: 2;
+    top: -1rem;
+    padding: 2rem !important;
+    padding-top: 3.2rem;
+    padding-bottom: 2rem;
+    .speakers-box {
+        overflow-y: scroll;
+        padding: 2rem;
+        border-right: 1px solid gray;
+        max-height: 250px;
+        height: 250px;
+    }
+}

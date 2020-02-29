@@ -1,0 +1,24 @@
+.clear-pagination, .clear-pagination a.item {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    a.item:before {
+        width: 0 !important;
+        background: transparent !important;
+    }
+    a.item {
+        color: #999999 !important;
+        min-width: 1rem !important;
+        border-radius: 50% !important;
+    }
+    a.item.active {
+        background-color: #d4e0ed !important;
+        color: #333333 !important;
+        font-weight: bold !important;
+        // opacity: 0.5;
+    }
+    a[type="prevItem"], a[type="nextItem"] {
+        color: #0e7ceb !important;
+    }
+}

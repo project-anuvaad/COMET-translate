@@ -1,0 +1,28 @@
+.progress-btn {
+    border: 0 !important;
+    box-shadow: none !important;
+    opacity: 1;
+    height: 1rem;
+    transition: height 0.5s ease-out, opacity 0.5s ease-out;
+}
+.progress-btn.hidden {
+    height: 0;
+    width: 0;
+    opacity: 0;
+    overflow: hidden;
+}
+
+.progress-bar {
+    width: 100%;
+    margin: 0 !important;
+    opacity: 1;
+    transition: width 0.5s ease-out, margin 0.5s ease-out, opacity 0.5s ease-out;
+    height: 1rem;
+}
+
+.progress-bar.hidden{
+    height: 0 !important;
+    // width: 0 !important;
+    opacity: 0;
+    overflow: hidden;
+}
