@@ -7,6 +7,8 @@ import ProgressButton from '../../components/ProgressButton';
 import VideoPlayer from '../../components/VideoPlayer';
 import fileUtils from '../../utils/fileUtils';
 import { getUserNamePreview } from '../../utils/helpers';
+import checkboxGreen from './checkbox-ticked-green.png';
+import checkboxOrange from './checkbox-ticked-orange.png';
 
 function renderLabel(text) {
     return (
@@ -165,10 +167,10 @@ export default class TranslationExportCard extends React.Component {
                     style={{ position: 'absolute', fontSize: '1rem', top: '-0.8rem', right: '46%', zIndex: 1 }}
                 >
                     {translationExport.status === 'done' && (
-                        <img src="/img/checkbox-ticked-green.png" />
+                        <img src={checkboxGreen} />
                     )}
                     {(translationExport.exportRequestStatus === 'pending' || translationExport.status === 'pending') && (
-                        <img src="/img/checkbox-ticked-orange.png" />
+                        <img src={checkboxOrange} />
                     )}
 
                     {(translationExport.exportRequestStatus === 'declined' || translationExport.status === 'failed') && (
