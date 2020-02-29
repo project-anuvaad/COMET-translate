@@ -9,7 +9,7 @@ This web component is part of www.videowiki.org and used for the translation sta
 
 Use the web component `vw-proofread` anywhere on the page with the following properties  
 
-`<vw-translate apiKey="" apiRoot="" articleId=""></vw-proofread>`
+`<vw-translate apiKey="" apiRoot="" articleId=""></vw-translate>`
 `
 ### Properties
 - apiKey: Obtain an API key for your organization from the dashboard on www.videowiki.org
