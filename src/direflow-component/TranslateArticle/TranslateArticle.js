@@ -86,7 +86,7 @@ class TranslateArticle extends React.Component {
             <Styled styles={styles}>
                 <div style={{ width: '100%', padding: '2rem', }}>
                     {this.props.translatableArticle && (
-                        <a href={this.props.backUrl || 'javascript:void(0)'} onClick={() => this.props.backUrl ? null : window.history.back()}>
+                        <a href={this.props.backRoute || 'javascript:void(0)'} onClick={() => this.props.backRoute ? null : window.history.back()}>
                             <Button
                                 basic
                                 circular

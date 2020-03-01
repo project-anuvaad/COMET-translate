@@ -15,3 +15,4 @@ Use the web component `vw-proofread` anywhere on the page with the following pro
 - apiKey: Obtain an API key for your organization from the dashboard on www.videowiki.org
 - apiRoot: The API to which the component will communicate, for integration with videowiki's original API use https://api.videowiki.org/api
 - articleId: the `_id` field of the article that is to be translated
+- backRoute: the location/route to which the component should redirect when the user press the back button.
