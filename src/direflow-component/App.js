@@ -5,6 +5,7 @@ import { store } from './store'
 
 import TranslateArticle from './TranslateArticle'
 import { LOCALSTORAGE_API_ROOT_KEY, LOCALSTORAGE_API_KEY_KEY } from './TranslateArticle/constants';
+import { NotificationContainer } from 'react-notifications';
 
 class App extends React.Component {
 
@@ -23,6 +24,8 @@ class App extends React.Component {
         <TranslateArticle
           {...this.props}
         />
+        <NotificationContainer />
+
       </Provider>
     )
   }
