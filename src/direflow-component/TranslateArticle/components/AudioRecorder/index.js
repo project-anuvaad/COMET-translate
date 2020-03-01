@@ -206,11 +206,11 @@ class AudioRecorder extends React.Component {
           </Button>
           )}
           {this.props.maxDuration && this.state.startTime && this.state.remainingMS !== null && (
-            <div
+            <span
               style={{ margin: 10 }}
             >
               {formatTime(this.state.remainingMS)}
-            </div>
+            </span>
           )}
           {/* {this.state.waveData && (
           <div
