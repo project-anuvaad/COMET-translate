@@ -20,7 +20,7 @@ function renderLabel(text) {
 export default class TranslationExportCard extends React.Component {
 
     renderDownloadDropdown = () => {
-        const { translationExport } = this.props;
+        const { translationExport, canGenerateSignLanguage } = this.props;
         if (translationExport.status !== 'done') return;
 
         return (
@@ -83,6 +83,43 @@ export default class TranslationExportCard extends React.Component {
                                 />
                             </Dropdown.Item>
                         )}
+
+                    {canGenerateSignLanguage ? (
+                      translationExport.subtitledSignlanguageVideoUrl ? (
+                        <Dropdown.Item
+                            as={'a'}
+                            style={{ color: 'black' }}
+                            href={`${translationExport.subtitledSignlanguageVideoUrl}?download`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            Video + Subtitles + Sign language
+                                <Icon style={{ marginLeft: 10 }} name="check circle outline" color="green" />
+
+                        </Dropdown.Item>
+                    ) : (
+
+                            <Dropdown.Item
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (!translationExport.subtitledSignlanguageVideoUrl) {
+                                        this.props.onGenerateTranslationExportSubtitledSignLanguage(translationExport._id);
+                                    } else {
+                                        fileUtils.downloadFile(translationExport.subtitledSignlanguageVideoUrl);
+                                    }
+                                }}
+
+                            >
+                                <ProgressButton
+                                    onClick={() => {
+                                    }}
+                                    percent={translationExport.subtitledSignlanguageVideoProgress}
+                                    showProgress={translationExport.subtitledSignlanguageVideoProgress > 0}
+                                    text="Video + Subtitles + Sign Language"
+                                />
+                            </Dropdown.Item>
+                        )  
+                    ): null}
 
                     {translationExport.subtitleUrl ? (
                         <Dropdown.Item

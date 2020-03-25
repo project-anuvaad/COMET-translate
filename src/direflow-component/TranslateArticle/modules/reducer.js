@@ -58,6 +58,8 @@ const INITIAL_STATE = {
     findAndReplaceModalVisible: false,
     video: null,
     syncAllLoading: false,
+    uploadPictureInPictureLoading: false,
+    signLanguageArticles: [],
     // Subtitles tab
     subtitles: null,
     subtitlesLoading: false,
@@ -150,6 +152,10 @@ export default function (state = INITIAL_STATE, action) {
             return { ...state, video: action.payload };
         case actionTypes.SET_SYNC_ALL_LOADING:
                 return { ...state, syncAllLoading: action.payload };
+        case actionTypes.SET_UPLOAD_PICTURE_IN_PICTURE_LOADING:
+            return { ...state, uploadPictureInPictureLoading: action.payload };
+        case actionTypes.SET_SIGNLANG_ARTICLES:
+            return { ...state, signLanguageArticles: action.payload };
 
         case actionTypes.SET_SUBTITLES:
             return { ...state, subtitles: action.payload };

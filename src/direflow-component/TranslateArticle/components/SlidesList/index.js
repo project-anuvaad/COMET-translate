@@ -50,7 +50,7 @@ class SlidesList extends React.Component {
               <span className="timing">
                 {formatTime(subslide.startTime * 1000)} - {formatTime(subslide.endTime * 1000)}
               </span>
-              {subslide.text && subslide.audio && (
+              {((subslide.text && subslide.audio) || subslide.picInPicVideoUrl) && (
                 <Icon className="marker-icons" name="check circle" color="green" />
               )}
             </div>

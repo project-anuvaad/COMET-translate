@@ -4,3 +4,27 @@
     background-color: #d4e0ed !important;
 
 }
+
+.dropbox {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+    height: 200px;
+    border: 1px solid #d4e0ed;
+    background-color: #ecf5fe;
+    img {
+        width: 68px;
+        height: 55px;
+        object-fit: contain;
+    }
+    .description{
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    .extra {
+        color: #999999;
+        font-size: 14px;
+    }
+}

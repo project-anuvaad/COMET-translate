@@ -45,7 +45,7 @@ class TranslateBox extends React.Component {
             style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <h4 style={{ color: '#333333', margin: 0, padding: '1rem' }}>
-              Slide 1
+              Slide
             </h4>
             <Button
               basic

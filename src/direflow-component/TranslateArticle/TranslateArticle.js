@@ -65,7 +65,7 @@ class TranslateArticle extends React.Component {
                         >
                             <Grid.Row>
                                 <Grid.Column width={10}>
-                                    <img src="/img/undraw_security_o890.png" width="100%" />
+                                    <img src="https://tailoredvideowiki.s3-eu-west-1.amazonaws.com/static/undraw_security_o890.png" width="100%" />
                                 </Grid.Column>
                                 <Grid.Column width={6} style={{ display: 'flex', alignItems: 'center' }}>
                                     <h2>

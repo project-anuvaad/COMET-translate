@@ -705,6 +705,76 @@ export const tmpSaveRecordedTranslation = (slidePosition, subslidePosition, blob
      
 }
 
+const setUploadPictureInPictureLoading = loading => ({
+    type: actionTypes.SET_UPLOAD_PICTURE_IN_PICTURE_LOADING,
+    payload: loading,
+}) 
+
+export const uploadPictureInPictureVideo = (slidePosition, subslidePosition, blob) => (dispatch, getState) => {
+    const { translatableArticle } = getState()[moduleName]
+    const slideIndex = translatableArticle.slides.findIndex((s) => s.position === slidePosition);
+    const subslideIndex = translatableArticle.slides[slideIndex].content.findIndex((s) => s.position === subslidePosition);
+    dispatch(setUploadPictureInPictureLoading(true));
+    // dispatch(addLoadingSlide(slideIndex, subslideIndex));
+
+    requestAgent.post(Api.translate.addPictureInPicture(translatableArticle._id))
+    .field('slidePosition', slidePosition)
+    .field('subslidePosition', subslidePosition)
+    .attach('file', blob)
+    .then((res) => {
+        const { translatableArticle, originalTranslatableArticle } = getState()[moduleName]
+
+        translatableArticle.slides[slideIndex].content[subslideIndex].picInPicVideoUrl = res.body.picInPicVideoUrl;
+
+        const updates = {
+            translatableArticle: _.cloneDeep(translatableArticle),
+            editorMuted: false,
+            editorPlaying: false,
+            recordUploadLoading: false,
+
+        }
+        const updatedOriginalTranslatableArticle = getUpdatedOrignalTranslatableArticle(originalTranslatableArticle, slidePosition, subslidePosition, { picInPicVideoUrl: res.body.picInPicVideoUrl });
+        if (updatedOriginalTranslatableArticle) {
+            updates.originalTranslatableArticle = updatedOriginalTranslatableArticle;
+        }
+        dispatch(batchUpdateState(updates));
+        dispatch(setUploadPictureInPictureLoading(false));
+    })
+    .catch((err) => {
+        console.log(err);
+
+        dispatch(setUploadPictureInPictureLoading(false));
+        NotificationService.responseError(err);
+    })
+}
+
+export const updatePictureInPicturePosition = (slidePosition, subslidePosition, picInPicPosition) => (dispatch, getState) => {
+    const { translatableArticle } = getState()[moduleName]
+    const slideIndex = translatableArticle.slides.findIndex((s) => s.position === slidePosition);
+    const subslideIndex = translatableArticle.slides[slideIndex].content.findIndex((s) => s.position === subslidePosition);
+
+    requestAgent.patch(Api.translate.updatePictureInPicturePosition(translatableArticle._id), { slidePosition, subslidePosition, picInPicPosition })
+    .then((res) => {
+        const { translatableArticle, originalTranslatableArticle } = getState()[moduleName]
+
+        translatableArticle.slides[slideIndex].content[subslideIndex].picInPicPosition = res.body.picInPicPosition;
+
+        const updates = {
+            translatableArticle: _.cloneDeep(translatableArticle),
+        }
+        const updatedOriginalTranslatableArticle = getUpdatedOrignalTranslatableArticle(originalTranslatableArticle, slidePosition, subslidePosition, { picInPicPosition: res.body.picInPicPosition });
+        if (updatedOriginalTranslatableArticle) {
+            updates.originalTranslatableArticle = updatedOriginalTranslatableArticle;
+        }
+        dispatch(batchUpdateState(updates));
+    })
+    .catch((err) => {
+        console.log(err);
+        NotificationService.responseError(err);
+    })
+}
+
+
 export const saveRecordedTranslation = (slidePosition, subslidePosition, blob) => (dispatch, getState) => {
     // dispatch(setRecordUploadLoading(true));
     const { translatableArticle } = getState()[moduleName]
@@ -987,6 +1057,24 @@ export const fetchArticleVideo = (videoId) => (dispatch) => {
     })
 }
 
+const setSignLangArticles = articles => ({
+    type: actionTypes.SET_SIGNLANG_ARTICLES,
+    payload: articles,
+})
+
+export const fetchSignLangArticles = (originalArticleId) => (dispatch) => {
+    console.log(originalArticleId)
+    requestAgent
+    .get(Api.article.getArticles({ originalArticle: originalArticleId, signLang: true }))
+    .then((res) => {
+        const { articles } = res.body;
+        dispatch(setSignLangArticles(articles));
+    })
+    .catch(err => {
+        console.log(err);
+    })   
+}
+
 
 export const approveTranslationExport = (translationExportId) => (dispatch, getState) => {
     dispatch(setLaoding(true))
@@ -1067,7 +1155,24 @@ export const generateTranslationExportSubtitle = (translationExportId) => (dispa
     .then((res) => {
         const { translationExport } = res.body;
         const { translationExports } = getState()[moduleName];
-        console.log('translation exports', translationExports, translationExport)
+        const translationExportIndex = translationExports.findIndex((t) => t._id === translationExport._id);
+        translationExports[translationExportIndex] = translationExport;
+        dispatch(setTranslationExports([...translationExports]));
+        
+    })
+    .catch((err) => {
+        console.log(err);
+        NotificationService.responseError(err);
+        dispatch(setLaoding(false))
+    })
+}
+
+export const generateTranslationExportSubtitledSignLanguage = (translationExportId, articleId) => (dispatch, getState) => {
+    requestAgent
+    .post(Api.translationExport.generateSubtitlesSignLanguage(translationExportId), { articleId })
+    .then((res) => {
+        const { translationExport } = res.body;
+        const { translationExports } = getState()[moduleName];
         const translationExportIndex = translationExports.findIndex((t) => t._id === translationExport._id);
         translationExports[translationExportIndex] = translationExport;
         dispatch(setTranslationExports([...translationExports]));

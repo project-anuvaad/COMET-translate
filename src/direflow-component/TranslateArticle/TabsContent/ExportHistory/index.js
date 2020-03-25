@@ -15,7 +15,6 @@ import * as translateArticleActions from '../../modules/actions';
 const FETCH_TRANSLATIONEXPORTS = 'FETCH_TRANSLATIONEXPORTS';
 class ExportHistory extends React.Component {
     state = {
-        showProgress: false,
         selectedTranslationExport: null,
         translationExportModalVisible: false,
     }
@@ -23,12 +22,10 @@ class ExportHistory extends React.Component {
         this.props.setExportHistoryPageNumber(1);
         this.props.fetchTranslationExports(this.props.exportHistoryCurrentPageNumber, true);
         this.props.fetchArticleVideo(this.props.translatableArticle.video);
+        this.props.fetchSignLangArticles(this.props.translatableArticle.originalArticle);
         this.props.startJob({ jobName: FETCH_TRANSLATIONEXPORTS, interval: 10000 }, () => {
             this.props.fetchTranslationExports(this.props.exportHistoryCurrentPageNumber, false);
         })
-        setInterval(() => {
-            this.setState({ showProgress: !this.state.showProgress });
-        }, 5000);
     }
 
     componentWillUnmount = () => {
@@ -249,6 +246,8 @@ class ExportHistory extends React.Component {
 
 
     render() {
+        const canGenerateSignLanguage = this.props.signLanguageArticles.length > 0;
+
         return (
             <LoaderComponent active={this.props.loading}>
                 <div>
@@ -271,11 +270,15 @@ class ExportHistory extends React.Component {
                                             lang={this.props.translatableArticle.langCode || this.props.translatableArticle.langName}
                                             translationExport={{...translationExport }}
                                             canApprove={this.canApprove()}
+                                            canGenerateSignLanguage={canGenerateSignLanguage}
                                             hasBackgroundMusic={this.props.video && this.props.video.backgroundMusicUrl}
                                             onOpenTranslationExportSettings={this.onOpenTranslationExportSettings}
                                             onGenerateTranslationExportSubtitledVideo={this.props.generateTranslationExportSubtitledVideo}
                                             onGenerateTranslationExportSubtitle={this.props.generateTranslationExportSubtitle}
                                             onGenerateTranslationExportAudioArchive={this.props.generateTranslationExportAudioArchive}
+                                            onGenerateTranslationExportSubtitledSignLanguage={() => {
+                                                this.props.generateTranslationExportSubtitledSignLanguage(translationExport._id, this.props.signLanguageArticles[0]._id)
+                                            }}
                                             onApproveRequest={this.onApproveRequest}
                                             onDeclineRequest={this.onDeclineRequest}
                                         />
@@ -300,6 +303,7 @@ const mapStateToProps = ({ translateArticle }) => ({
     user: translateArticle.user,
     translatableArticle: translateArticle.translatableArticle,
     video: translateArticle.video,
+    signLanguageArticles: translateArticle.signLanguageArticles,
 })
 
 const mapDispatchToProps = (dispatch) => ({
@@ -308,12 +312,14 @@ const mapDispatchToProps = (dispatch) => ({
     generateTranslationExportAudioArchive: translationExportId => dispatch(translateArticleActions.generateTranslationExportAudioArchive(translationExportId)),
     generateTranslationExportSubtitledVideo: translationExportId => dispatch(translateArticleActions.generateTranslationExportSubtitledVideo(translationExportId)),
     generateTranslationExportSubtitle: translationExportId => dispatch(translateArticleActions.generateTranslationExportSubtitle(translationExportId)),
+    generateTranslationExportSubtitledSignLanguage: (translationExportId, articleId) => dispatch(translateArticleActions.generateTranslationExportSubtitledSignLanguage(translationExportId, articleId)),
     updateTranslationExportAudioSettings: (translationExportId, changes) => dispatch(translateArticleActions.updateTranslationExportAudioSettings(translationExportId, changes)),
     approveTranslationExport: (translationExportId) => dispatch(translateArticleActions.approveTranslationExport(translationExportId)),
     declineTranslationExport: (translationExportId) => dispatch(translateArticleActions.declineTranslationExport(translationExportId)),
     startJob: (options, callFunc) => dispatch(translateArticleActions.startJob(options, callFunc)),
     stopJob: (jobName) => dispatch(translateArticleActions.stopJob(jobName)),
     fetchArticleVideo: videoId => dispatch(translateArticleActions.fetchArticleVideo(videoId)),
+    fetchSignLangArticles: (originalArticle) => dispatch(translateArticleActions.fetchSignLangArticles(originalArticle)),
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(ExportHistory); 

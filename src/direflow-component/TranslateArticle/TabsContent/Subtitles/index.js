@@ -309,7 +309,7 @@ class Subtitles extends React.Component {
 
                 <LoaderComponent active={subtitlesLoading}>
                     {!subtitles ? (
-                        <img src="/img/undraw_security_o890.png" width="100%" />
+                        <img src="https://tailoredvideowiki.s3-eu-west-1.amazonaws.com/static/undraw_security_o890.png" width="100%" />
                     ) : (
 
                             <Grid style={{ backgroundColor: 'black', paddingTop: '3rem', marginLeft: '-3rem', marginRight: '-3rem' }}>

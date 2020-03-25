@@ -6,6 +6,8 @@ import Lottie from 'react-lottie';
 import { Grid, Card, Button, Icon, Input, Progress, Select, Popup, Sidebar, Checkbox, Dropdown } from 'semantic-ui-react';
 import moment from 'moment';
 import ReactAvatar from 'react-avatar';
+import Dropzone from 'react-dropzone';
+
 
 
 // COMPONENTS
@@ -45,6 +47,25 @@ import styles from './style.scss'
 import { Styled } from 'direflow-component';
 
 const FETCH_ARTICLE_JOBNAME = 'FETCH_TRANSLATE_ARTICLE';
+
+const PICTURE_IN_PICTURE_POSITIONS = [
+    {
+        text: 'Bottom Right',
+        value: 'br'
+    },
+    {
+        text: 'Bottom Left',
+        value: 'bl',
+    },
+    {
+        text: 'Top Right',
+        value: 'tr'
+    },
+    {
+        text: 'Top left',
+        value: 'tl',
+    },
+]
 
 const calculateCompletedArticlePercentage = article => {
     const slides = article.slides.reduce((acc, slide) => acc.concat(slide.content), []).filter((slide) => slide);
@@ -139,13 +160,13 @@ class Workstation extends React.Component {
         if (this.props.preview) {
             return true;
         }
-        return translatableArticle.slides.reduce((acc, s) => acc.concat(s.content), []).every((s) => s.audio && s.text);
+        return translatableArticle.slides.reduce((acc, s) => acc.concat(s.content), []).every((s) => (s.audio && s.text) || s.picInPicVideoUrl);
     }
 
     canExport = () => {
         const { originalTranslatableArticle } = this.props;
         if (!originalTranslatableArticle) return false;
-        return originalTranslatableArticle.slides.reduce((acc, s) => acc.concat(s.content), []).every((s) => s.audio && s.text);
+        return originalTranslatableArticle.slides.reduce((acc, s) => acc.concat(s.content), []).every((s) => (s.audio && s.text) || s.picInPicVideoUrl);
     }
 
     /*
@@ -209,12 +230,18 @@ class Workstation extends React.Component {
     onPlayToggle = () => {
         const { editorPlaying } = this.props;
         const newPlaying = !editorPlaying;
+        console.log('on play toggle', newPlaying, this.props.preview ,this.picInPicRef)
         if (newPlaying) {
             this.videoRef.play();
-            if (this.props.preview && this.audioRef) {
+            if (this.props.preview && !this.props.translatableArticle.signLang && this.audioRef) {
                 this.audioRef.play();
-            } else {
+                console.log('play audio')
+            } else if (this.props.preview && this.picInPicRef) {
+                this.picInPicRef.play();
+                console.log('play video pic in pic', this.picInPicRef)
+            } else if ( this.videoAudioRef) {
                 this.videoAudioRef.play();
+                console.log('play videoaudioref')
             }
         } else {
             this.videoRef.pause();
@@ -299,6 +326,11 @@ class Workstation extends React.Component {
         const { translatableArticle } = this.props;
         const selectedTranslator = translatableArticle && translatableArticle.translators ? translatableArticle.translators.find(t => t.speakerNumber === this.props.selectedSpeakerNumber) : null;
         return selectedTranslator;
+    }
+
+    onUploadPictureInPicture = e => {
+        const { slide, subslide } = this.getCurrentSlideAndSubslide();
+        this.props.uploadPictureInPictureVideo(slide.position, subslide.position, e.target.files[0]);
     }
 
     onSaveTranslatedText = (value, slideIndex, subslideIndex) => {
@@ -429,6 +461,36 @@ class Workstation extends React.Component {
         }
     }
 
+    onPlay = () => {
+        this.videoRef.play()
+        this.props.setEditorPlaying(true)
+        this.props.setEditorMuted(true);
+    }
+    onPause = () => {
+        this.videoRef.pause()
+        this.props.setEditorPlaying(false)
+        this.props.setEditorMuted(false);
+    }
+
+    onEnded = () => {
+        this.videoRef.pause();
+        this.videoRef.currentTime = 0;
+        this.props.setEditorPlaying(false)
+        this.props.setEditorMuted(false);
+    }
+
+    onChangeSignLangVideo = (acceptedFiles) => {
+        if (acceptedFiles.length > 0) {
+            const { slide, subslide } = this.getCurrentSlideAndSubslide();
+            this.props.uploadPictureInPictureVideo(slide.position, subslide.position, acceptedFiles[0])
+        }
+    }
+
+    onChangePicInPicPosition = (e, { value }) => {
+        const { slide, subslide } = this.getCurrentSlideAndSubslide();
+        this.props.updatePictureInPicturePosition(slide.position, subslide.position, value);
+    }
+
     _renderUploadAudio = (disabled) => {
         const { subslide } = this.getCurrentSlideAndSubslide();
         return (
@@ -536,6 +598,108 @@ class Workstation extends React.Component {
     isCurrentSlideLoading = () => {
         const { loadingSlides, currentSlideIndex, currentSubslideIndex } = this.props;
         return loadingSlides && loadingSlides.find((slide) => slide.slideIndex === currentSlideIndex && slide.subslideIndex === currentSubslideIndex) ? true : false;
+    }
+
+    renderSignLangUpload = () => {
+        const { slide, subslide } = this.getCurrentSlideAndSubslide();
+        if (!subslide) return null;
+
+        return (
+            <Grid.Row style={{ marginTop: '2.7rem' }}>
+                <Grid.Column width={16}>
+                    <div style={{ minHeight: 300 }}>
+                        <LoaderComponent active={this.props.uploadPictureInPictureLoading}>
+                            <Dropzone
+                                multiple={false}
+                                accept="video/*"
+                                onDrop={this.onChangeSignLangVideo}>
+                                {({ getRootProps, getInputProps }) => (
+                                    <section>
+                                        <div {...getRootProps()}>
+                                            <input {...getInputProps()} />
+                                            {subslide.picInPicVideoUrl ? (
+                                                <video
+                                                    muted={true}
+                                                    onPlay={this.onPlay}
+                                                    onPause={this.onPause}
+                                                    // onEnded={this.onEnded}
+                                                    controls
+                                                    ref={ref => this.picInPicRef = ref}
+                                                    src={subslide.picInPicVideoUrl}
+                                                    key={subslide.picInPicVideoUrl}
+                                                    width={'100%'}
+                                                />
+                                            ) : (
+                                                    <div className="dropbox">
+                                                        <img src="https://tailoredvideowiki.s3-eu-west-1.amazonaws.com/static/upload-cloud.png" />
+                                                        <p className="description">Drag and drop a video file here to upload</p>
+                                                        <p className="extra">or just click here to choose a video file</p>
+                                                    </div>
+                                                )}
+                                            <p style={{ textAlign: 'center' }}>
+                                                {subslide.picInPicVideoUrl ? (
+                                                    <div
+                                                        style={{ color: '#999999' }}
+                                                    >
+                                                        You can
+                                                <Button
+                                                            primary
+                                                            basic
+                                                            circular
+                                                            style={{ margin: 10 }}
+                                                        >
+                                                            choose another video
+                                                </Button>
+                                                        or drag it here
+                                    </div>
+                                                ) : ''}
+                                            </p>
+                                        </div>
+
+                                    </section>
+                                )}
+
+                            </Dropzone>
+
+                        </LoaderComponent>
+                    </div>
+                    {subslide && subslide.picInPicVideoUrl && (
+                        <div>
+                            <div style={{ marginBottom: 10, marginTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                {/* <Popup
+                                    content="coming soon"
+                                    trigger={(
+                                        <Button
+                                            // icon
+                                            circular
+                                            // ="left"
+                                            // loading={this.props.uploadPictureInPictureLoading}
+                                            disabled={true}
+                                            // onClick={this.toggleRecord}
+                                            color={this.state.recording ? 'red' : 'green'}
+                                        >
+                                            <Icon name="video" style={{ marginRight: 10 }} /> Record
+                                        </Button>
+                                    )}
+                                /> */}
+                                <div />
+                                <div>
+                                    <span style={{ display: 'inline-block', marginRight: 10 }}>
+                                        <strong>Video Position:</strong>
+                                    </span>
+                                    <Dropdown
+                                        options={PICTURE_IN_PICTURE_POSITIONS}
+                                        value={subslide.picInPicPosition}
+                                        onChange={this.onChangePicInPicPosition}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </Grid.Column>
+            </Grid.Row>
+
+        )
     }
 
     renderTextForm = () => {
@@ -675,22 +839,9 @@ class Workstation extends React.Component {
                                         <audio
                                             key={`audio-player-${subslide.tmpAudio || subslide.audio}`}
                                             controls
-                                            onPlay={() => {
-                                                this.videoRef.play()
-                                                this.props.setEditorPlaying(true)
-                                                this.props.setEditorMuted(true);
-                                            }}
-                                            onPause={() => {
-                                                this.videoRef.pause()
-                                                this.props.setEditorPlaying(false)
-                                                this.props.setEditorMuted(false);
-                                            }}
-                                            onEnded={() => {
-                                                this.videoRef.pause();
-                                                this.videoRef.currentTime = 0;
-                                                this.props.setEditorPlaying(false)
-                                                this.props.setEditorMuted(false);
-                                            }}
+                                            onPlay={this.onPlay}
+                                            onPause={this.onPause}
+                                            onEnded={this.onEnded}
                                         >
                                             <source src={subslide.tmpAudio || subslide.audio} />
                                             Your browser does not support the audio element.
@@ -819,7 +970,6 @@ class Workstation extends React.Component {
                                                         )}
                                                         {originalViewedArticle.slides[currentSlideIndex] && originalViewedArticle.slides[currentSlideIndex].content[currentSubslideIndex] && (
                                                             <div>
-
                                                                 <ProofreadingVideoPlayerV2
                                                                     inverted
                                                                     width={'100%'}
@@ -941,7 +1091,7 @@ class Workstation extends React.Component {
                                         <Icon name="arrow right" style={{ marginLeft: 10 }} />
                                             </Button>
                                             <Grid>
-                                                {this.renderTextForm()}
+                                                {this.props.translatableArticle && this.props.translatableArticle.signLang ? this.renderSignLangUpload() : this.renderTextForm()}
                                                 {this.props.selectedSpeakerNumber !== -1 && (
                                                     <Grid.Row>
 
@@ -983,7 +1133,7 @@ class Workstation extends React.Component {
                                                     <Grid.Column width={10}>
                                                         <h5>
                                                             ALL SLIDES ({this.props.subslides ? this.props.subslides.length : 0})
-                                                    <Button
+                                                            <Button
                                                                 basic
                                                                 circular
                                                                 size="tiny"
@@ -992,7 +1142,9 @@ class Workstation extends React.Component {
                                                                 color="teal"
                                                                 onClick={() => {
                                                                     this.onPreviewChange(!this.props.preview)
-                                                                    this.onPlayToggle()
+                                                                    setTimeout(() => {
+                                                                        this.onPlayToggle();
+                                                                    }, 100);
                                                                 }}
                                                             />
                                                         </h5>
@@ -1056,7 +1208,6 @@ class Workstation extends React.Component {
                                                                             <span>
                                                                                 Speaker {sp.speakerNumber} ({sp.speakerGender})
                                                                             </span>
-                                                                            {/* <ReactAvatar /> */}
                                                                             {speakerTranslatorsMap && speakerTranslatorsMap[sp.speakerNumber] && (
                                                                                 <Popup
                                                                                     trigger={
@@ -1081,14 +1232,9 @@ class Workstation extends React.Component {
                                                 <div style={{ width: '100%' }}>
                                                     <Progress size="small" progress color="green" percent={calculateCompletedArticlePercentage(translatableArticle)} style={{ marginBottom: 0 }} />
                                                 </div>
-                                                {/* <Grid.Row>
-                                                    <Grid.Column width={16}>
-                                                    </Grid.Column>
-                                                </Grid.Row> */}
                                                 <Grid.Row>
                                                     <Grid.Column width={16}>
                                                         <Grid>
-
                                                             <SlidesList
                                                                 currentSlideIndex={currentSlideIndex}
                                                                 currentSubslideIndex={currentSubslideIndex}
@@ -1132,6 +1278,8 @@ const mapDispatchToProps = dispatch => ({
     saveTranslatedText: (slidePositon, subslidePosition, text) => dispatch(translationActions.saveTranslatedText(slidePositon, subslidePosition, text)),
     findAndReplaceText: (find, replace) => dispatch(translationActions.findAndReplaceText(find, replace)),
     setRecording: recording => dispatch(translationActions.setRecording(recording)),
+    uploadPictureInPictureVideo: (slidePosition, subslidePosition, blob) => dispatch(translationActions.uploadPictureInPictureVideo(slidePosition, subslidePosition, blob)),
+    updatePictureInPicturePosition: (slidePosition, subslidePosition, position) => dispatch(translationActions.updatePictureInPicturePosition(slidePosition, subslidePosition, position)),
     saveRecordedTranslation: (slidePositon, subslidePosition, blob) => dispatch(translationActions.saveRecordedTranslation(slidePositon, subslidePosition, blob)),
     tmpSaveRecordedTranslation: (slidePositon, subslidePosition, blob) => dispatch(translationActions.tmpSaveRecordedTranslation(slidePositon, subslidePosition, blob)),
     deleteRecordedTranslation: (slidePositon, subslidePosition) => dispatch(translationActions.deleteRecordedTranslation(slidePositon, subslidePosition)),
