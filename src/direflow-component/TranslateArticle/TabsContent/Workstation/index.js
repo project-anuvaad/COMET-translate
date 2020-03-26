@@ -682,6 +682,9 @@ class Workstation extends React.Component {
                                         </Button>
                                     )}
                                 /> */}
+                                <div>
+                                    <small>Maximum limit: {parseFloat(subslide.media[0].duration).toFixed(2)} seconds</small>
+                                </div>
                                 <div />
                                 <div>
                                     <span style={{ display: 'inline-block', marginRight: 10 }}>
