@@ -45,6 +45,7 @@ import {
 import styles from './style.scss'
 
 import { Styled } from 'direflow-component';
+import TranslationVersionSelectModal from './TranslationVersionSelectModal';
 
 const FETCH_ARTICLE_JOBNAME = 'FETCH_TRANSLATE_ARTICLE';
 
@@ -77,6 +78,7 @@ class Workstation extends React.Component {
     state = {
         pollerStarted: false,
         videoSpeedPollerStarted: false,
+        translationVersionModalVisible: false,
         assignUsersModalVisible: false,
         duration: 0,
         currentTime: 0,
@@ -88,7 +90,8 @@ class Workstation extends React.Component {
         this.props.fetchTranslatableArticleBaseLanguages({ articleId });
         this.props.fetchSubtitles(articleId);
         this.props.setCCVisible(true);
-
+        this.props.fetchTranslationVersionsCount({ articleId })
+        this.props.fetchTranslationVersions({ articleId })
         let {
             speakerNumber,
             finishDateOpen,
@@ -230,7 +233,7 @@ class Workstation extends React.Component {
     onPlayToggle = () => {
         const { editorPlaying } = this.props;
         const newPlaying = !editorPlaying;
-        console.log('on play toggle', newPlaying, this.props.preview ,this.picInPicRef)
+        console.log('on play toggle', newPlaying, this.props.preview, this.picInPicRef)
         if (newPlaying) {
             this.videoRef.play();
             if (this.props.preview && !this.props.translatableArticle.signLang && this.audioRef) {
@@ -239,7 +242,7 @@ class Workstation extends React.Component {
             } else if (this.props.preview && this.picInPicRef) {
                 this.picInPicRef.play();
                 console.log('play video pic in pic', this.picInPicRef)
-            } else if ( this.videoAudioRef) {
+            } else if (this.videoAudioRef) {
                 this.videoAudioRef.play();
                 console.log('play videoaudioref')
             }
@@ -255,6 +258,21 @@ class Workstation extends React.Component {
 
     }
 
+    getVersionedSubslides = () => {
+        const { slide, subslide } = this.getCurrentSlideAndSubslide();
+        const { translationVersions } = this.props;
+        if (!slide || !subslide || !translationVersions) return [];
+        const slidePosition = slide.position;
+        const subslidePosition = subslide.position;
+        const subslides = [];
+        translationVersions.forEach(article => {
+            const vsubslide = article.slides.find(s => s.position === slidePosition).content.find(s => s.position === subslidePosition);
+            vsubslide.articleId = article._id;
+            subslides.push(vsubslide);
+        });
+        return subslides;
+    }
+
 
     onSlideChange = (currentSlideIndex, currentSubslideIndex) => {
         const { slide, subslide } = this.getCurrentSlideAndSubslide();
@@ -262,6 +280,11 @@ class Workstation extends React.Component {
             this.props.saveRecordedTranslation(slide.position, subslide.position, subslide.recordedBlob, true);
         }
         this.props.setCurrentEditorIndexes({ currentSlideIndex, currentSubslideIndex });
+        const { translatableArticle } = this.props;
+        if (translatableArticle.slides[currentSlideIndex] && translatableArticle.slides[currentSlideIndex].content[currentSubslideIndex]) {
+            this.props.setCurrentSlide(translatableArticle.slides[currentSlideIndex]);
+            this.props.setCurrentSubslide(translatableArticle.slides[currentSlideIndex].content[currentSubslideIndex])
+        }
         if (!this.props.preview) {
             this.props.setEditorPlaying(false);
             this.props.setEditorMuted(false);
@@ -714,6 +737,7 @@ class Workstation extends React.Component {
             currentSubslideIndex,
             recording,
         } = this.props;
+
         const { slide, subslide } = this.getCurrentSlideAndSubslide();
         const canModify = this.canModify();
         const sameLang = translatableArticle && originalViewedArticle && originalViewedArticle.langCode.indexOf(translatableArticle.langCode) === 0 && !translatableArticle.tts;
@@ -732,6 +756,14 @@ class Workstation extends React.Component {
                 canSyncAll = true;
             }
         }
+        const versionedSubslides = this.getVersionedSubslides();
+        let slideTitle = `Slide ${this.props.listIndex + 1}`;
+        if (versionedSubslides && versionedSubslides.length > 0) {
+            const selectedVersion = versionedSubslides.findIndex(vs => vs.articleId === subslide.translationVersionArticleId);
+            if (selectedVersion !== -1) {
+                slideTitle = <span>Slide {this.props.listIndex + 1} -<small> Translator {selectedVersion + 1}</small> </span>;
+            }
+        }
 
         return (
             <React.Fragment>
@@ -740,6 +772,7 @@ class Workstation extends React.Component {
                         <Grid.Column computer={16} mobile={16}>
                             {translatableArticle.slides[currentSlideIndex] && (
                                 <TranslateBox
+                                    title={slideTitle}
                                     findAndReplaceModalVisible={this.props.findAndReplaceModalVisible}
                                     onFindAndReplaceSubmit={({ find, replace }) => {
                                         this.props.findAndReplaceText(find, replace);
@@ -752,6 +785,8 @@ class Workstation extends React.Component {
                                     disabled={!canModify}
                                     currentSlideIndex={currentSlideIndex}
                                     currentSubslideIndex={currentSubslideIndex}
+                                    translationVersionsCount={this.props.translationVersionsCount}
+                                    onOpenTranslationVersions={() => this.setState({ translationVersionModalVisible: true })}
                                 />
                             )}
 
@@ -937,6 +972,7 @@ class Workstation extends React.Component {
         const assignedTranslations = this.getUserAssignedTranslations();
         const selectedTranslator = this.getSelectedTranslator();
         const speakerTranslatorsMap = this.getSpeakersTranslatorsMap();
+        const versionedSubslides = this.getVersionedSubslides();
 
         return (
             <Styled styles={styles}>
@@ -1255,6 +1291,21 @@ class Workstation extends React.Component {
                                 </React.Fragment>
                             )}
                             {this.renderSpeakerTranslationEndtimeModal()}
+                            <TranslationVersionSelectModal
+                                open={this.state.translationVersionModalVisible}
+                                onClose={() => this.setState({ translationVersionModalVisible: false })}
+                                onVersionChange={(translationVersionArticleId) => {
+                                    this.setState({ translationVersionModalVisible: false });
+                                    this.props.setTranslationVersionForSubslide({ articleId: translatableArticle._id, slidePosition: slide.position, subslidePosition: subslide.position, translationVersionArticleId })
+                                }}
+                                onTranscribeAll={(translationVersionArticleId) => {
+                                    this.props.setTranslationVersionForAllSubslides({ articleId: translatableArticle._id, translationVersionArticleId })
+                                }}
+                                slide={slide}
+                                subslide={subslide}
+                                translationVersions={this.props.translationVersions}
+                                versionedSubslides={versionedSubslides}
+                            />
                         </Grid>
 
                     </LoaderComponent>
@@ -1273,10 +1324,14 @@ const mapStateToProps = ({ translateArticle }) => ({
 })
 
 const mapDispatchToProps = dispatch => ({
+    setCurrentSlide: slide => dispatch(translationActions.setCurrentSlide(slide)),
+    setCurrentSubslide: subslide => dispatch(translationActions.setCurrentSubslide(subslide)),
+    setTranslationVersionForSubslide: (params) => dispatch(translationActions.setTranslationVersionForSubslide(params)),
+    setTranslationVersionForAllSubslides: (params) => dispatch(translationActions.setTranslationVersionForAllSubslides(params)),
     fetchTranslatableArticle: (params) => dispatch(translationActions.fetchTranslatableArticle(params)),
+    fetchTranslationVersionsCount: (params) => dispatch(translationActions.fetchTranslationVersionsCount(params)),
+    fetchTranslationVersions: (params) => dispatch(translationActions.fetchTranslationVersions(params)),
     fetchTranslatableArticleBaseLanguages: ({ articleId }) => dispatch(translationActions.fetchTranslatableArticleBaseLanguages({ articleId })),
-    setCurrentSlideIndex: index => dispatch(translationActions.setCurrentSlideIndex(index)),
-    setCurrentSubslideIndex: index => dispatch(translationActions.setCurrentSubslideIndex(index)),
     setCurrentEditorIndexes: indexes => dispatch(translationActions.setCurrentEditorIndexes(indexes)),
     saveTranslatedText: (slidePositon, subslidePosition, text) => dispatch(translationActions.saveTranslatedText(slidePositon, subslidePosition, text)),
     findAndReplaceText: (find, replace) => dispatch(translationActions.findAndReplaceText(find, replace)),

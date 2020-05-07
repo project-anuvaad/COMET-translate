@@ -69,6 +69,10 @@ export default {
         updateAudioFromOriginal: (translateableArticleId) => `${getApiRoot()}/translate/${translateableArticleId}/audio/original`,
         deleteRecordedTranslation: (translateableArticleId) => `${getApiRoot()}/translate/${translateableArticleId}/audio`,
         updateVideoSpeed: (translateableArticleId) => `${getApiRoot()}/translate/${translateableArticleId}/videoSpeed`,
+        getTranslationVersions: (translateableArticleId) => `${getApiRoot()}/translate/${translateableArticleId}/translationVersions`,
+        getTranslationVersionsCount: (translateableArticleId) => `${getApiRoot()}/translate/${translateableArticleId}/translationVersions/count`,
+        setTranslationVersionForSubslide: translateableArticleId => `${getApiRoot()}/translate/${translateableArticleId}/translationVersions/setTranslationVersionForSubslide`,
+        setTranslationVersionForAllSubslides: translateableArticleId => `${getApiRoot()}/translate/${translateableArticleId}/translationVersions/setTranslationVersionForAllSubslides`,
     },
     translationExport: {
         getByArticleId: (articleId, params) => `${getApiRoot()}/translationExport/by_article_id/${articleId}?${querystring.encode(params)}`,
@@ -118,9 +122,9 @@ export default {
         combineSubtitles: (id) => `${getApiRoot()}/subtitles/${id}/subtitles/combine`,
     },
     apiKeys: {
-        get: (params) => `${getApiRoot()}/apiKey?${querystring.encode(params)}`,
-        getByKey: (apiKey) => `${getApiRoot()}/apiKey/by_key?apiKey=${apiKey}`,
-        create: () => `${getApiRoot()}/apiKey`,
-        delete: (id) => `${getApiRoot()}/apiKey/${id}`,
+        get: (params) => `${getApiRoot()}/apikey?${querystring.encode(params)}`,
+        getByKey: (apiKey) => `${getApiRoot()}/apikey/by_key?apiKey=${apiKey}`,
+        create: () => `${getApiRoot()}/apikey`,
+        delete: (id) => `${getApiRoot()}/apikey/${id}`,
     }
 }

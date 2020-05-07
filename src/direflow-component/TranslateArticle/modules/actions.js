@@ -14,6 +14,17 @@ const moduleName = 'translateArticle';
 
 
 
+
+export const setCurrentSlide = loading => ({
+    type: actionTypes.SET_CURRENT_SLIDE,
+    payload: loading,
+})
+
+export const setCurrentSubslide = loading => ({
+    type: actionTypes.SET_CURRENT_SUBSLIDE,
+    payload: loading,
+})
+
 const setLaoding = loading => ({
     type: actionTypes.SET_LOADING,
     payload: loading,
@@ -361,6 +372,79 @@ export const fetchTranslatableArticleBaseLanguages = ({ articleId }) => (dispatc
     })
 }
 
+
+const setTranslationVersionsCount = count => ({
+    type: actionTypes.SET_TRANSLATION_VERSIONS_COUNT,
+    payload: count,
+})
+// fetchTranslationVersions
+export const fetchTranslationVersionsCount = ({ articleId }) => (dispatch, getState) => {
+    requestAgent
+    .get(Api.translate.getTranslationVersionsCount(articleId))
+    .then((res) => {
+        const { count } = res.body;
+        dispatch(setTranslationVersionsCount(count))
+    })
+    .catch((err) => {
+        console.log(err);
+        NotificationService.responseError(err);
+    })
+}
+
+const setTranslationVersions = articles => ({
+    type: actionTypes.SET_TRANSLATION_VERSIONS,
+    payload: articles,
+})
+// fetchTranslationVersions
+export const fetchTranslationVersions = ({ articleId }) => (dispatch, getState) => {
+    requestAgent
+    .get(Api.translate.getTranslationVersions(articleId))
+    .then((res) => {
+        const { articles } = res.body;
+        dispatch(setTranslationVersions(articles))
+    })
+    .catch((err) => {
+        console.log(err);
+        NotificationService.responseError(err);
+    })
+}
+
+export const setTranslationVersionForSubslide = ({ articleId, slidePosition, subslidePosition, translationVersionArticleId }) => (dispatch, getState) => {
+    requestAgent
+    .post(Api.translate.setTranslationVersionForSubslide(articleId), { slidePosition, subslidePosition, translationVersionArticleId })
+    .then(({ body }) => {
+        console.log(body)
+        const { subslide } = body;
+        const { translatableArticle } = getState()[moduleName]
+        const slideIndex = translatableArticle.slides.findIndex((s) => s.position === slidePosition);
+        const subslideIndex = translatableArticle.slides[slideIndex].content.findIndex((s) => s.position === subslidePosition);
+        const changes = {}
+        Object.keys(subslide).forEach(key => {
+            translatableArticle.slides[slideIndex].content[subslideIndex][key] = subslide[key];    
+            changes[key] = subslide[key];
+        })
+        dispatch(bulkActions.startBatchMode());
+        dispatch(setTranslatableArticle({ ...translatableArticle }));
+        dispatch(updateOriginalTranslatableArticle(slidePosition, subslidePosition, changes))
+        dispatch(bulkActions.flushBatchedActions());
+    })
+    .catch(err => {
+        console.log(err);
+        NotificationService.responseError(err);
+    })
+}
+export const setTranslationVersionForAllSubslides = ({ articleId,  translationVersionArticleId }) => (dispatch, getState) => {
+    requestAgent
+    .post(Api.translate.setTranslationVersionForAllSubslides(articleId), { translationVersionArticleId })
+    .then(({ body }) => {
+      window.location.reload()
+    })
+    .catch(err => {
+        console.log(err);
+        NotificationService.responseError(err);
+    })
+}
+
 export const fetchTranslatableArticle = ({ articleId, loading = true, langCode, langName, tts }) => (dispatch, getState) => {
     if (loading) {
         dispatch(setOriginalArticle(null));
@@ -460,13 +544,18 @@ export const saveTranslatedText = (slidePosition, subslidePosition, text) => (di
     requestAgent
     .post(Api.translate.addTranslatedText(translatableArticle._id), { slidePosition, subslidePosition, text })
     .then((res) => {
+        const { translatableArticle } = getState()[moduleName]
+        const { slidePosition, subslidePosition, ...rest } = res.body;
         const slideIndex = translatableArticle.slides.findIndex((s) => s.position === slidePosition);
         const subslideIndex = translatableArticle.slides[slideIndex].content.findIndex((s) => s.position === subslidePosition);
-        translatableArticle.slides[slideIndex].content[subslideIndex].text = text;
-        translatableArticle.slides[slideIndex].content[subslideIndex].audioSynced = false;
+        const changes = {}
+        Object.keys(rest).forEach(key => {
+            translatableArticle.slides[slideIndex].content[subslideIndex][key] = rest[key];    
+            changes[key] = rest[key];
+        })
         dispatch(bulkActions.startBatchMode());
         dispatch(setTranslatableArticle({ ...translatableArticle }));
-        dispatch(updateOriginalTranslatableArticle(slidePosition, subslidePosition, { text, audioSynced: false }))
+        dispatch(updateOriginalTranslatableArticle(slidePosition, subslidePosition, changes))
         dispatch(bulkActions.flushBatchedActions());
     })
     .catch((err) => {

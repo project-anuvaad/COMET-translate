@@ -16,6 +16,12 @@ const INITIAL_STATE = {
 
     currentSlideIndex: 0,
     currentSubslideIndex: 0,
+    
+    currentSlide: null,
+    currentSubslide: null,
+
+    translationVersions: [],
+    translationVersionsCount: 1,
 
     loadingSlides: [],
     subslides: [],
@@ -31,7 +37,7 @@ const INITIAL_STATE = {
 
     selectedSpeakerNumber: null,
     translationSpeakerEndtimeModalVisible: false,
-    ccVisible: true, 
+    ccVisible: true,
 
     translationExports: [],
     loading: false,
@@ -85,12 +91,20 @@ export default function (state = INITIAL_STATE, action) {
             return { ...state, organization: action.payload };
         case actionTypes.SET_ORGANIZATION_USERS:
             return { ...state, organizationUsers: action.payload };
+        case actionTypes.SET_CURRENT_SLIDE:
+            return { ...state, currentSlide: action.payload };
+        case actionTypes.SET_CURRENT_SUBSLIDE:
+            return { ...state, currentSubslide: action.payload };
         case actionTypes.SET_ORIGINAL_ARTICLE:
             return { ...state, originalArticle: action.payload };
         case actionTypes.SET_ORIGINAL_VIEWED_ARTICLE:
             return { ...state, originalViewedArticle: action.payload };
         case actionTypes.SET_ORIGINAL_TRANSLATABLE_ARTICLE:
             return { ...state, originalTranslatableArticle: action.payload };
+        case actionTypes.SET_TRANSLATION_VERSIONS:
+            return { ...state, translationVersions: action.payload };
+        case actionTypes.SET_TRANSLATION_VERSIONS_COUNT:
+            return { ...state, translationVersionsCount: action.payload };
         case actionTypes.SET_TRANSLATABLE_ARTICLE:
             return { ...state, translatableArticle: action.payload };
         case actionTypes.SET_TEMP_VIEWED_ARTICLE:
@@ -151,7 +165,7 @@ export default function (state = INITIAL_STATE, action) {
         case actionTypes.SET_ARTICLE_VIDEO:
             return { ...state, video: action.payload };
         case actionTypes.SET_SYNC_ALL_LOADING:
-                return { ...state, syncAllLoading: action.payload };
+            return { ...state, syncAllLoading: action.payload };
         case actionTypes.SET_UPLOAD_PICTURE_IN_PICTURE_LOADING:
             return { ...state, uploadPictureInPictureLoading: action.payload };
         case actionTypes.SET_SIGNLANG_ARTICLES:
