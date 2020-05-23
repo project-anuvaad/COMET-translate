@@ -22,18 +22,27 @@ export default class SlideCommentsCard extends React.Component {
                 {data.comments.map((comment, index) => (
                     <div style={{ display: 'flex', alignItems: 'center', margin: '2rem', marginBottom: 0 }} key={`comment-item-${index}`}>
                         <div style={{ flex: 1 }}>
-                            <ReactAvatar
-                                round
-                                size={40}
-                                name={getUserNamePreview(comment.user)}
-                            />
+                            {comment.user ? (
+                                <ReactAvatar
+                                    round
+                                    size={40}
+                                    name={getUserNamePreview(comment.user)}
+                                />
+                            ) : (
+                                <ReactAvatar
+                                    round
+                                    size={40}
+                                    name={'V W'}
+                                />
+                            )}
                         </div>
                         <div
                             style={{ flex: 12, marginLeft: '2rem' }}
                         >
                             <small>Slide {data.index + 1}</small>
                             <p style={{ margin: 0 }}>
-                                {getUserNamePreview(comment.user)}
+                                {comment.isWhatsappComment && comment.whatsappContactNumber ? `Whatsapp Contact: ${comment.whatsappContactNumber}` : ''}
+                                {comment.user ? getUserNamePreview(comment.user) : ''}
                             </p>
                             <p style={{ backgroundColor: '#d4e0ed', color: '#666666', padding: '1rem', marginBottom: 0 }}>
                                 {comment.content}
