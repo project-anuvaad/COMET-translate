@@ -46,6 +46,7 @@ import styles from './style.scss'
 
 import { Styled } from 'direflow-component';
 import TranslationVersionSelectModal from './TranslationVersionSelectModal';
+import TranslatingVideoTutorialModal from '../../components/TranslatingVideoTutorialModal';
 
 const FETCH_ARTICLE_JOBNAME = 'FETCH_TRANSLATE_ARTICLE';
 
@@ -79,6 +80,7 @@ class Workstation extends React.Component {
         pollerStarted: false,
         videoSpeedPollerStarted: false,
         translationVersionModalVisible: false,
+        isTranslatingVideoTutorialModalVisible: true,
         assignUsersModalVisible: false,
         duration: 0,
         currentTime: 0,
@@ -124,8 +126,7 @@ class Workstation extends React.Component {
                 this.startFetchArticleJob()
             } else if (nextProps.translatableArticle.translationProgress === 100 && this.state.pollerStarted) {
                 this.setState({ pollerStarted: false });
-                this.stopFetchArticleJob();
-            }
+                this.stopFetchArticleJob(); }
         }
     }
 
@@ -1127,7 +1128,17 @@ class Workstation extends React.Component {
                                                 style={{ position: 'absolute', top: '-5.5rem', right: 0 }}
                                             >
                                                 Send to Export
-                                        <Icon name="arrow right" style={{ marginLeft: 10 }} />
+                                                <Icon name="arrow right" style={{ marginLeft: 10 }} />
+                                            </Button>
+
+                                            <Button
+                                                circular
+                                                color="green"
+                                                size="tiny"
+                                                style={{ position: 'absolute', right: 0, top: '-2rem', zIndex: 2 }}
+                                                onClick={() => this.setState({ isTranslatingVideoTutorialModalVisible: true })}
+                                            >
+                                                Translation Tutorial <Icon name="info circle" style={{ marginLeft: 10 }} />
                                             </Button>
                                             <Grid>
                                                 {this.props.translatableArticle && this.props.translatableArticle.signLang ? this.renderSignLangUpload() : this.renderTextForm()}
@@ -1306,8 +1317,12 @@ class Workstation extends React.Component {
                                 translationVersions={this.props.translationVersions}
                                 versionedSubslides={versionedSubslides}
                             />
+                            <TranslatingVideoTutorialModal
+                                open={this.state.isTranslatingVideoTutorialModalVisible}
+                                onClose={() => this.setState({ isTranslatingVideoTutorialModalVisible: false })}
+                            />  
                         </Grid>
-
+                                
                     </LoaderComponent>
                 </div>
             </Styled>
