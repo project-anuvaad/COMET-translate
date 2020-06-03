@@ -303,6 +303,19 @@ const updateOriginalTranslatableArticle = (slidePosition, subslidePosition, chan
         }
     }
 }
+export const updateShowTranslationTutorial = (showTranslatingTutorial) => (dispatch, getState) => {
+    requestAgent
+    .patch(Api.user.updateShowTranslatingTutorial(), { showTranslatingTutorial })
+    .then(() => {
+        const { user } = getState()[moduleName];
+        user.showTranslatingTutorial = showTranslatingTutorial;
+        dispatch(setUserData({ ...user }))
+    })
+    .catch(err => {
+        console.log(err);
+        NotificationService.responseError(err);
+    })
+}
 
 export const setFindAndReplaceModalVisible = (visible) => ({
     type: actionTypes.SET_FIND_AND_REPLACE_MODAL_VISIBLE,

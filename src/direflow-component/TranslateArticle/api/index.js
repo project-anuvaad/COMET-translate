@@ -100,6 +100,7 @@ export default {
         resetPassword: () => `${getApiRoot()}/user/resetPassword`,
         getUserDetails: () => `${getApiRoot()}/user/getUserDetails`,
         updatePassword: (userId) => `${getApiRoot()}/user/${userId}/password`,
+        updateShowTranslatingTutorial: () => `${getApiRoot()}/user/showTranslatingTutorial`,
     },
     invitations: {
         respondToOrganizationInvitation: (organizationId) => `${getApiRoot()}/invitations/organization/${organizationId}/invitations/respond`,

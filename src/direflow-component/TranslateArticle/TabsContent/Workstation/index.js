@@ -80,7 +80,7 @@ class Workstation extends React.Component {
         pollerStarted: false,
         videoSpeedPollerStarted: false,
         translationVersionModalVisible: false,
-        isTranslatingVideoTutorialModalVisible: true,
+        isTranslatingVideoTutorialModalVisible: false,
         assignUsersModalVisible: false,
         duration: 0,
         currentTime: 0,
@@ -109,6 +109,12 @@ class Workstation extends React.Component {
         }
     }
 
+    componentDidMount = () => {
+        if (this.props.user && this.props.user.showTranslatingTutorial) {
+            this.setState({ isTranslatingVideoTutorialModalVisible: true });
+        }
+    }
+
     componentWillReceiveProps(nextProps) {
         if (!this.props.translatableArticle && nextProps.translatableArticle && !this.socketSub) {
             this.initSocketSub(nextProps.translatableArticle)
@@ -126,7 +132,11 @@ class Workstation extends React.Component {
                 this.startFetchArticleJob()
             } else if (nextProps.translatableArticle.translationProgress === 100 && this.state.pollerStarted) {
                 this.setState({ pollerStarted: false });
-                this.stopFetchArticleJob(); }
+                this.stopFetchArticleJob();
+            }
+        }
+        if (!this.props.user && nextProps.user && nextProps.user.showTranslatingTutorial) {
+            this.setState({ isTranslatingVideoTutorialModalVisible: true })
         }
     }
 
@@ -666,7 +676,7 @@ class Workstation extends React.Component {
                                                         style={{ color: '#999999' }}
                                                     >
                                                         You can
-                                                <Button
+                                                        <Button
                                                             primary
                                                             basic
                                                             circular
@@ -675,7 +685,7 @@ class Workstation extends React.Component {
                                                             choose another video
                                                 </Button>
                                                         or drag it here
-                                    </div>
+                                                    </div>
                                                 ) : ''}
                                             </p>
                                         </div>
@@ -1054,7 +1064,7 @@ class Workstation extends React.Component {
                                                                                     )) : (
                                                                                             <Dropdown.Item active>
                                                                                                 No base languages available yet
-                                                                                    </Dropdown.Item>
+                                                                                            </Dropdown.Item>
                                                                                         )}
                                                                                 </Dropdown.Menu>
                                                                             </Dropdown>
@@ -1069,7 +1079,7 @@ class Workstation extends React.Component {
                                                                     >
                                                                         <source src={subslide.audio} />
                                                                         Your browser does not support the audio element.
-                                                            </audio>
+                                                                    </audio>
                                                                 )}
                                                             </div>
 
@@ -1320,9 +1330,11 @@ class Workstation extends React.Component {
                             <TranslatingVideoTutorialModal
                                 open={this.state.isTranslatingVideoTutorialModalVisible}
                                 onClose={() => this.setState({ isTranslatingVideoTutorialModalVisible: false })}
-                            />  
+                                showOnStartup={this.props.user && this.props.user.showTranslatingTutorial}
+                                onChangeShowOnStartup={(show) => this.props.updateShowTranslationTutorial(show)}
+                            />
                         </Grid>
-                                
+
                     </LoaderComponent>
                 </div>
             </Styled>
@@ -1348,6 +1360,9 @@ const mapDispatchToProps = dispatch => ({
     fetchTranslationVersions: (params) => dispatch(translationActions.fetchTranslationVersions(params)),
     fetchTranslatableArticleBaseLanguages: ({ articleId }) => dispatch(translationActions.fetchTranslatableArticleBaseLanguages({ articleId })),
     setCurrentEditorIndexes: indexes => dispatch(translationActions.setCurrentEditorIndexes(indexes)),
+    
+    updateShowTranslationTutorial: (show) => dispatch(translationActions.updateShowTranslationTutorial(show)),
+
     saveTranslatedText: (slidePositon, subslidePosition, text) => dispatch(translationActions.saveTranslatedText(slidePositon, subslidePosition, text)),
     findAndReplaceText: (find, replace) => dispatch(translationActions.findAndReplaceText(find, replace)),
     setRecording: recording => dispatch(translationActions.setRecording(recording)),
