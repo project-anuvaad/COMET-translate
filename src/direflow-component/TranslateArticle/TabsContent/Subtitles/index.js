@@ -336,7 +336,7 @@ class Subtitles extends React.Component {
                                                     onTimeChange={this.onTimeChange}
                                                     videoRef={(ref) => this.videoRef = ref}
                                                     width={'100%'}
-                                                    url={subtitlesTranslationExport ? subtitlesTranslationExport.videoUrl : subtitlesVideo.url}
+                                                    url={subtitlesTranslationExport ? (subtitlesTranslationExport.compressedVideoUrl || subtitlesTranslationExport.videoUrl ): subtitlesVideo.url}
                                                     onPlayToggle={this.onPlayToggle}
                                                     extraContent={
                                                         (
