@@ -487,6 +487,8 @@ export const fetchTranslatableArticle = ({ articleId, loading = true, langCode, 
             translatableArticle: _.cloneDeep(article),
             originalTranslatableArticle: _.cloneDeep(article),
             subslides,
+            currentSlide: article.slides[0],
+            currentSubslide: article.slides[0].content[0],
             listIndex: 0,
             maxListIndex: subslides.length - 1,
         }
@@ -1067,9 +1069,9 @@ export const requestExportTranslationReview = (articleId) => (dispatch, getState
 }
 
 
-export const updateArticleVideoSpeed = (articleId, speed) => (dispatch, getState) => {
+export const updateArticleVideoSpeed = ({articleId, speed, type, slidePosition, subslidePosition }) => (dispatch, getState) => {
     requestAgent
-    .post(Api.translate.updateVideoSpeed(articleId), { videoSpeed: speed })
+    .post(Api.translate.updateVideoSpeed(articleId), { videoSpeed: speed, type, slidePosition, subslidePosition })
     .then((res) => {
         console.log(res.body);
         const { videoSpeedLoading } = res.body;

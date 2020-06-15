@@ -488,11 +488,9 @@ class Workstation extends React.Component {
         return getUsersByRoles(this.props.organizationUsers, this.props.organization, ['translate', 'admin', 'owner']);
     }
 
-    onVideoSpeedChange = (speed) => {
-        const { translatableArticle } = this.props;
-        if (speed !== translatableArticle.videoSpeed) {
-            this.props.updateArticleVideoSpeed(translatableArticle._id, speed)
-        }
+    onVideoSpeedChange = (speed, slide) => {
+        const { translatableArticle, currentSubslide, currentSlide } = this.props;
+        this.props.updateArticleVideoSpeed({ articleId: translatableArticle._id, type: slide, speed, slidePosition: currentSlide.position, subslidePosition: currentSubslide.position })
     }
 
     onPlay = () => {
@@ -1098,7 +1096,8 @@ class Workstation extends React.Component {
                                                         >
                                                             <div>
                                                                 <EditVideoSpeedModal
-                                                                    value={translatableArticle.videoSpeed}
+                                                                    value={this.props.currentSubslide && this.props.currentSubslide.videoSpeed ? this.props.currentSubslide.videoSpeed : 1}
+                                                                    slideIndex={this.props.listIndex}
                                                                     onSubmit={this.onVideoSpeedChange}
                                                                 />
                                                             </div>
@@ -1391,7 +1390,7 @@ const mapDispatchToProps = dispatch => ({
     fetchSubtitles: (articleId) => dispatch(translationActions.fetchSubtitles(articleId)),
     fetchUsers: (organizationId) => dispatch(translationActions.fetchUsers(organizationId)),
     updateTranslators: (articleId, translators) => dispatch(translationActions.updateTranslators(articleId, translators)),
-    updateArticleVideoSpeed: (articleId, speed) => dispatch(translationActions.updateArticleVideoSpeed(articleId, speed)),
+    updateArticleVideoSpeed: (params) => dispatch(translationActions.updateArticleVideoSpeed(params)),
     setCCVisible: visible => dispatch(translationActions.setCCVisible(visible)),
     setCommentsSlidesIndexes: indexes => dispatch(translationActions.setCommentsSlidesIndexes(indexes)),
     setAddCommentSlideIndex: index => dispatch(translationActions.setAddCommentSlideIndex(index)),

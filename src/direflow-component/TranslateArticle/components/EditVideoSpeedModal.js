@@ -1,9 +1,10 @@
 import React from 'react';
-import { Modal, Button, Input, Grid } from 'semantic-ui-react';
+import { Modal, Button, Input, Grid, Dropdown } from 'semantic-ui-react';
 
 export default class EditVideoSpeedModal extends React.Component {
     state = {
         open: false,
+        slideValue: 'slide',
         value: 1,
     }
 
@@ -15,7 +16,7 @@ export default class EditVideoSpeedModal extends React.Component {
 
     componentWillReceiveProps = (nextProps) => {
         if (nextProps.value !== this.state.value) {
-            this.setState({ vaue: nextProps.value })
+            this.setState({ value: nextProps.value })
         }
     }
 
@@ -47,13 +48,17 @@ export default class EditVideoSpeedModal extends React.Component {
                     <Grid>
                         <Grid.Row style={{ justifyContent: 'center', alignItems: 'center' }}>
                             <Grid.Column width={4}>
-                                <h4>Video Speed:</h4>
+                              <Dropdown
+                                value={this.state.slideValue}
+                                options={[{ key: 'video-speed-' + this.props.slideIndex, value: 'slide', text: `Slide ${this.props.slideIndex + 1}`},{ key: 'video-speed-all', value: 'all', text: 'All Slides'}]} 
+                                onChange={(e, data) => this.setState({ slideValue: data.value })}
+                            />
                             </Grid.Column>
                             <Grid.Column width={4}>
                                 <Input
                                     type='number'
                                     min={10}
-                                    max={100}
+                                    max={200}
                                     step={10}
                                     fluid
                                     value={this.state.value * 100}
@@ -73,7 +78,7 @@ export default class EditVideoSpeedModal extends React.Component {
                     </Button>
                     <Button
                         onClick={() => {
-                            this.props.onSubmit(this.state.value);
+                            this.props.onSubmit(this.state.value, this.state.slideValue);
                             this.setState({ open: false });
                         }}
                         primary
