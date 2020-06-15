@@ -15,14 +15,14 @@ const moduleName = 'translateArticle';
 
 
 
-export const setCurrentSlide = loading => ({
+export const setCurrentSlide = slide => ({
     type: actionTypes.SET_CURRENT_SLIDE,
-    payload: loading,
+    payload: slide,
 })
 
-export const setCurrentSubslide = loading => ({
+export const setCurrentSubslide = subslide => ({
     type: actionTypes.SET_CURRENT_SUBSLIDE,
-    payload: loading,
+    payload: subslide,
 })
 
 const setLaoding = loading => ({
@@ -481,48 +481,57 @@ export const fetchTranslatableArticle = ({ articleId, loading = true, langCode, 
         })
 
 
+        const { selectedSpeakerNumber, currentSlide, currentSubslide } = getState()[moduleName];
         const update = {
             originalArticle: _.cloneDeep(originalArticle),
             originalViewedArticle: _.cloneDeep(originalArticle),
             translatableArticle: _.cloneDeep(article),
             originalTranslatableArticle: _.cloneDeep(article),
             subslides,
-            currentSlide: article.slides[0],
-            currentSubslide: article.slides[0].content[0],
-            listIndex: 0,
             maxListIndex: subslides.length - 1,
         }
-        dispatch(batchUpdateState(update));
-        const { selectedSpeakerNumber } = getState()[moduleName];
-        // If there was prevously selected speaker, change the new viewed article's speaker
-        if (selectedSpeakerNumber !== -1 && article.speakersProfile.find(s => s.speakerNumber === selectedSpeakerNumber)) {
-            dispatch(changeSelectedSpeakerNumber(selectedSpeakerNumber))
-        } else {
-            dispatch(changeSelectedSpeakerNumber(-1))
+        if (!currentSlide && loading) {
+            update.listIndex = 0;
+            update.currentSlide = article.slides[0];
+            update.currentSubslide = article.slides[0].content[0];
+        } else if (!loading && currentSlide && currentSubslide) {
+            const newSlide = article.slides.find(s => s.position === currentSlide.position);
+            const newSubslide = newSlide.content.find(s => s.position === currentSubslide.position);
+            update.currentSlide = newSlide;
+            update.currentSubslide = newSubslide;
         }
-        // Set selected display language as the one from the translatable article
-        const selectedLang = {
-            langCode: originalArticle.langCode,
-            langName: originalArticle.langName || '',
-            tts: originalArticle.tts,
-        };
-        dispatch(setSelectedBaseLanguage(selectedLang));
+        dispatch(batchUpdateState(update));
+        if (loading) {
+            // If there was prevously selected speaker, change the new viewed article's speaker
+            if (selectedSpeakerNumber !== -1 && article.speakersProfile.find(s => s.speakerNumber === selectedSpeakerNumber)) {
+                dispatch(changeSelectedSpeakerNumber(selectedSpeakerNumber))
+            } else {
+                dispatch(changeSelectedSpeakerNumber(-1))
+            }
+            // Set selected display language as the one from the translatable article
+            const selectedLang = {
+                langCode: originalArticle.langCode,
+                langName: originalArticle.langName || '',
+                tts: originalArticle.tts,
+            };
+            dispatch(setSelectedBaseLanguage(selectedLang));
 
-        let {
-            comment,
-            slideIndex,
-            slidePosition,
-            subslidePosition,
-        } = querystring.parse(window.location.search);
+            let {
+                comment,
+                slideIndex,
+                slidePosition,
+                subslidePosition,
+            } = querystring.parse(window.location.search);
 
-        if (comment && slideIndex) {
-            setTimeout(() => {
-                const currentSlideIndex = article.slides.findIndex(s => s.position === parseInt(slidePosition));
-                const currentSubslideIndex = article.slides[currentSlideIndex].content.findIndex(s => s.position === parseInt(subslidePosition));
-                dispatch(setCurrentEditorIndexes({ currentSlideIndex, currentSubslideIndex }))
-                dispatch(setListIndex(parseInt(slideIndex) + 1))
-                dispatch(setCommentsVisible(true))
-            }, 500);
+            if (comment && slideIndex) {
+                setTimeout(() => {
+                    const currentSlideIndex = article.slides.findIndex(s => s.position === parseInt(slidePosition));
+                    const currentSubslideIndex = article.slides[currentSlideIndex].content.findIndex(s => s.position === parseInt(subslidePosition));
+                    dispatch(setCurrentEditorIndexes({ currentSlideIndex, currentSubslideIndex }))
+                    dispatch(setListIndex(parseInt(slideIndex) + 1))
+                    dispatch(setCommentsVisible(true))
+                }, 500);
+            }
         }
     })
     .catch((err) => {

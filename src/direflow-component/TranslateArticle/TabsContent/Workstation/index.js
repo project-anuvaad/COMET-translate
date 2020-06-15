@@ -84,6 +84,7 @@ class Workstation extends React.Component {
         isTranslatingVideoTutorialModalVisible: false,
         isDeleteRecordingModalVisible: false,
         assignUsersModalVisible: false,
+        highlightMaxTime: false,
         duration: 0,
         currentTime: 0,
     }
@@ -128,8 +129,11 @@ class Workstation extends React.Component {
                 this.setState({ videoSpeedPollerStarted: true });
                 this.startFetchArticleJob();
             } else if (!nextProps.translatableArticle.videoSpeedLoading && this.state.videoSpeedPollerStarted) {
-                this.setState({ videoSpeedPollerStarted: false });
+                this.setState({ videoSpeedPollerStarted: false, highlightMaxTime: true });
                 this.stopFetchArticleJob();
+                setTimeout(() => {
+                    this.setState({ highlightMaxTime: false })
+                }, 3000);
             }
             if (nextProps.translatableArticle.translationProgress !== 100 && !this.state.pollerStarted) {
                 this.setState({ pollerStarted: true })
@@ -719,7 +723,7 @@ class Workstation extends React.Component {
                                     )}
                                 /> */}
                                 <div>
-                                    <small>Maximum limit: {parseFloat(subslide.media[0].duration).toFixed(2)} seconds</small>
+                                    <small style={{ backgroundColor: this.state.highlightMaxTime ? 'yellow' : 'transparent', padding: '0.2rem' }}>Maximum limit: {parseFloat(subslide.media[0].duration).toFixed(2)} seconds</small>
                                 </div>
                                 <div />
                                 <div>
@@ -970,7 +974,7 @@ class Workstation extends React.Component {
                             )}
                             {!translatableArticle.tts && (
                                 <div>
-                                    <small>Maximum limit: {parseInt(translatableArticle.slides[currentSlideIndex].content[currentSubslideIndex].media[0].duration)} seconds</small>
+                                    <small style={{ backgroundColor: this.state.highlightMaxTime ? 'yellow' : 'transparent', padding: '0.2rem' }} >Maximum limit: {parseInt(translatableArticle.slides[currentSlideIndex].content[currentSubslideIndex].media[0].duration)} seconds</small>
                                 </div>
                             )}
                         </Grid.Column>

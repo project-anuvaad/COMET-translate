@@ -29,7 +29,7 @@ export default class EditVideoSpeedModal extends React.Component {
                     <span
                     >
                         <strong>
-                            Video Speed: {parseFloat(this.state.value).toFixed(2)}x
+                            Video Speed: {parseFloat(this.props.value).toFixed(2)}x
                         </strong>
                         <Button
                             circular
