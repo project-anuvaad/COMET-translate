@@ -47,6 +47,7 @@ import styles from './style.scss'
 import { Styled } from 'direflow-component';
 import TranslationVersionSelectModal from './TranslationVersionSelectModal';
 import TranslatingVideoTutorialModal from '../../components/TranslatingVideoTutorialModal';
+import DeleteModalRecording from '../../components/DeleteRecordingModal';
 
 const FETCH_ARTICLE_JOBNAME = 'FETCH_TRANSLATE_ARTICLE';
 
@@ -81,6 +82,7 @@ class Workstation extends React.Component {
         videoSpeedPollerStarted: false,
         translationVersionModalVisible: false,
         isTranslatingVideoTutorialModalVisible: false,
+        isDeleteRecordingModalVisible: false,
         assignUsersModalVisible: false,
         duration: 0,
         currentTime: 0,
@@ -88,6 +90,8 @@ class Workstation extends React.Component {
 
     componentWillMount() {
         const { articleId } = this.props;
+        this.props.setCurrentSlide(null);
+        this.props.setCurrentSubslide(null);
         this.props.fetchTranslatableArticle({ articleId });
         this.props.fetchTranslatableArticleBaseLanguages({ articleId });
         this.props.fetchSubtitles(articleId);
@@ -826,16 +830,21 @@ class Workstation extends React.Component {
                                                     icon="close"
                                                     color="red"
                                                     circular
-                                                    onClick={() => {
-                                                        if (subslide.tmpAudio) {
-                                                            this.props.deleteTmpRecordedTranslation(slide.position, subslide.position);
-                                                        } else {
-                                                            this.props.deleteRecordedTranslation(slide.position, subslide.position);
-                                                        }
-                                                    }}
+                                                    onClick={() => this.setState({ isDeleteRecordingModalVisible: true })}
                                                 />
                                             }
                                             content={(subslide.tmpAudio && subslide.audio) ? 'Restore original audio' : 'Delete current record'}
+                                        />
+                                        <DeleteModalRecording
+                                            open={this.state.isDeleteRecordingModalVisible}
+                                            onClose={() => this.setState({ isDeleteRecordingModalVisible: false })}
+                                            onConfirm={() => {
+                                                if (subslide.tmpAudio) {
+                                                    this.props.deleteTmpRecordedTranslation(slide.position, subslide.position);
+                                                } else {
+                                                    this.props.deleteRecordedTranslation(slide.position, subslide.position);
+                                                }
+                                            }}
                                         />
                                     </React.Fragment>
                                 ) : (
@@ -902,15 +911,22 @@ class Workstation extends React.Component {
                                                             name="close"
                                                             className="c-export-human-voice__clear-record"
                                                             onClick={() => {
-                                                                if (subslide.tmpAudio) {
-                                                                    this.props.deleteTmpRecordedTranslation(slide.position, subslide.position);
-                                                                } else {
-                                                                    this.props.deleteRecordedTranslation(slide.position, subslide.position);
-                                                                }
+                                                                this.setState({ isDeleteRecordingModalVisible: true })
                                                             }}
                                                         />
                                                     }
                                                     content={(subslide.tmpAudio && subslide.audio) ? 'Restore original audio' : 'Delete current record'}
+                                                />
+                                                <DeleteModalRecording
+                                                    open={this.state.isDeleteRecordingModalVisible}
+                                                    onClose={() => this.setState({ isDeleteRecordingModalVisible: false })}
+                                                    onConfirm={() => {
+                                                        if (subslide.tmpAudio) {
+                                                            this.props.deleteTmpRecordedTranslation(slide.position, subslide.position);
+                                                        } else {
+                                                            this.props.deleteRecordedTranslation(slide.position, subslide.position);
+                                                        }
+                                                    }}
                                                 />
                                             </React.Fragment>
                                         )}
@@ -1359,7 +1375,7 @@ const mapDispatchToProps = dispatch => ({
     fetchTranslationVersions: (params) => dispatch(translationActions.fetchTranslationVersions(params)),
     fetchTranslatableArticleBaseLanguages: ({ articleId }) => dispatch(translationActions.fetchTranslatableArticleBaseLanguages({ articleId })),
     setCurrentEditorIndexes: indexes => dispatch(translationActions.setCurrentEditorIndexes(indexes)),
-    
+
     updateShowTranslationTutorial: (show) => dispatch(translationActions.updateShowTranslationTutorial(show)),
 
     saveTranslatedText: (slidePositon, subslidePosition, text) => dispatch(translationActions.saveTranslatedText(slidePositon, subslidePosition, text)),
