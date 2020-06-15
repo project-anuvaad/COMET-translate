@@ -1060,7 +1060,7 @@ export const requestExportTranslationReview = (articleId) => (dispatch, getState
     .then((res) => {
         // NotificationService.success('The video has been queued to be exported. we\'ll notify you once it\'s done :)');
         NotificationService.success('The video has been queued to be exported.');
-        dispatch(setActiveTabIndex(2));
+        dispatch(setActiveTabIndex(1));
     })
     .catch((err) => {
         console.log(err);
