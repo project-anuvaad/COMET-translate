@@ -16,7 +16,7 @@ import { Styled } from 'direflow-component'
 
 class TranslateArticle extends React.Component {
 
-    componentWillUnmount = () => {
+    componentWillMount = () => {
         this.props.setActiveTabIndex(0);
     }
 
@@ -28,9 +28,9 @@ class TranslateArticle extends React.Component {
             case 0:
                 comp = <Workstation articleId={articleId} />; break;
             case 1:
-                comp = <Subtitles articleId={articleId} />; break;
-            case 2:
                 comp = <ExportHistory articleId={articleId} />; break;
+            case 2:
+                comp = <Subtitles articleId={articleId} />; break;
             default:
                 comp = <Workstation articleId={articleId} />; break;
         }
@@ -77,7 +77,7 @@ class TranslateArticle extends React.Component {
                     }
                 />
             );
-        return [{ title: 'Workstation' }, { render: generateSubtitleTitle }, { title: 'Export History' }];
+        return [{ title: 'Workstation' },  { title: 'Export History' }, { render: generateSubtitleTitle },];
     }
 
     render() {
@@ -100,7 +100,7 @@ class TranslateArticle extends React.Component {
                         items={items}
                         activeIndex={this.props.activeTabIndex}
                         onActiveIndexChange={val => {
-                            if (val === 1 && !this.props.subtitles) {
+                            if (val === 2 && !this.props.subtitles) {
                                 return;
                             }
                             this.props.setActiveTabIndex(val)

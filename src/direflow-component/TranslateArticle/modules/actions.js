@@ -1634,8 +1634,8 @@ export const activateSubtitles = (subtitleId) => (dispatch, getState) => {
     requestAgent
     .post(Api.subtitles.activateSubtitle(subtitleId), { activated: true })
     .then((res) => {
-        dispatch(setActiveTabIndex(2));
-        NotificationService.success(`${subtitlesVideo.title}'s subtitles have been updated`)
+        dispatch(setActiveTabIndex(1));
+        NotificationService.success(`Subtitles have been updated`)
     })
     .catch(err => {
         console.log(err);
