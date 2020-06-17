@@ -859,6 +859,7 @@ class Workstation extends React.Component {
                                                 } else {
                                                     this.props.deleteRecordedTranslation(slide.position, subslide.position);
                                                 }
+                                                this.setState({ isDeleteRecordingModalVisible: false })
                                             }}
                                         />
                                     </React.Fragment>
@@ -941,6 +942,7 @@ class Workstation extends React.Component {
                                                         } else {
                                                             this.props.deleteRecordedTranslation(slide.position, subslide.position);
                                                         }
+                                                        this.setState({ isDeleteRecordingModalVisible: false })
                                                     }}
                                                 />
                                             </React.Fragment>
