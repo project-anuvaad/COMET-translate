@@ -39,7 +39,8 @@ import {
     getUsersByRoles,
     getUserNamePreview,
     getSpeakersTranslatorsMap,
-    displayArticleLanguage
+    displayArticleLanguage,
+    canUserAccess
 } from '../../utils/helpers';
 
 import styles from './style.scss'
@@ -212,9 +213,18 @@ class Workstation extends React.Component {
     canModify = () => {
         const { translatableArticle, user, organization, currentSlideIndex, currentSubslideIndex } = this.props;
         if (!translatableArticle) return false;
-        const userOrgRole = getUserOrganziationRole(user, organization);
-        if (!userOrgRole) return false;
-        if (userOrgRole.organizationOwner || userOrgRole.permissions.indexOf('admin') !== -1 || userOrgRole.permissions.indexOf('translate') !== -1) return true;
+        // const userOrgRole = getUserOrganziationRole(user, organization);
+        // if (!userOrgRole) return false;
+        // if (userOrgRole.organizationOwner || userOrgRole.permissions.indexOf('admin') !== -1 || userOrgRole.permissions.indexOf('translate') !== -1) return true;
+        if (canUserAccess(user, organization, [
+            'admin',
+            'translate',
+            'voice_over_artist',
+            'translate_text',
+            'approve_translations',
+        ])) {
+            return true;
+        }
         return false;
     }
 
@@ -538,6 +548,7 @@ class Workstation extends React.Component {
                 <Button
                     circular
                     basic
+                    disabled={!this.canModify()}
                     icon="cloud upload"
                     color="teal"
                     onClick={() => document.getElementById('upload-audio-input').click()}
