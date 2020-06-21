@@ -73,6 +73,10 @@ export default {
         getTranslationVersionsCount: (translateableArticleId) => `${getApiRoot()}/translate/${translateableArticleId}/translationVersions/count`,
         setTranslationVersionForSubslide: translateableArticleId => `${getApiRoot()}/translate/${translateableArticleId}/translationVersions/setTranslationVersionForSubslide`,
         setTranslationVersionForAllSubslides: translateableArticleId => `${getApiRoot()}/translate/${translateableArticleId}/translationVersions/setTranslationVersionForAllSubslides`,
+        setStageToTextTranslationDone: translateableArticleId => `${getApiRoot()}/translate/${translateableArticleId}/stage/text_translation_done`,
+        setStageToVoiceoverTranslation: translateableArticleId => `${getApiRoot()}/translate/${translateableArticleId}/stage/voice_over_translation`,
+        setStageToVoiceoverTranslationDone: translateableArticleId => `${getApiRoot()}/translate/${translateableArticleId}/stage/voice_over_translation_done`,
+        setStageToDone: translateableArticleId => `${getApiRoot()}/translate/${translateableArticleId}/stage/done`,
     },
     translationExport: {
         getByArticleId: (articleId, params) => `${getApiRoot()}/translationExport/by_article_id/${articleId}?${querystring.encode(params)}`,

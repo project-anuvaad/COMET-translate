@@ -6,6 +6,8 @@ const INITIAL_STATE = {
     user: null,
     organization: null,
     organizationUsers: [],
+
+    stageLoading: false,
     translatableArticle: null,
     originalTranslatableArticle: null,
 
@@ -89,6 +91,8 @@ export default function (state = INITIAL_STATE, action) {
             return { ...state, user: action.payload };
         case actionTypes.SET_ORGANIZATION:
             return { ...state, organization: action.payload };
+        case actionTypes.SET_STAGE_LOADING:
+            return { ...state, stageLoading: action.payload };
         case actionTypes.SET_ORGANIZATION_USERS:
             return { ...state, organizationUsers: action.payload };
         case actionTypes.SET_CURRENT_SLIDE:

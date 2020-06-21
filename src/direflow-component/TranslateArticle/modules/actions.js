@@ -316,6 +316,83 @@ export const updateShowTranslationTutorial = (showTranslatingTutorial) => (dispa
         NotificationService.responseError(err);
     })
 }
+const setStageLoading = loading => ({
+    type: actionTypes.SET_STAGE_LOADING,
+    payload: loading,
+})
+export const markTextTranslationAsDone = articleId => dispatch => {
+    dispatch(setStageLoading(true))
+    requestAgent
+    .put(Api.translate.setStageToTextTranslationDone(articleId))
+    .then(() => {
+        NotificationService.success('Successfuly marked text translation as done');
+        dispatch(setStageLoading(false))
+        setTimeout(() => {
+            window.location.reload();
+        }, 1500);
+    })
+    .catch(err => {
+        console.log(err);
+        dispatch(setStageLoading(false))
+        NotificationService.responseError(err);
+    })
+}
+
+export const approveTextTranslation = (articleId) => (dispatch) => {
+
+    dispatch(setStageLoading(true))
+    requestAgent
+    .put(Api.translate.setStageToVoiceoverTranslation(articleId))
+    .then(() => {
+        NotificationService.success('Successfuly approved text translation');
+        dispatch(setStageLoading(false))
+        setTimeout(() => {
+            window.location.reload();
+        }, 1500);
+    })
+    .catch(err => {
+        console.log(err);
+        dispatch(setStageLoading(false))
+        NotificationService.responseError(err);
+    })
+}
+
+export const markVoiceTranslationAsDone = (articleId) => (dispatch) => {
+
+    dispatch(setStageLoading(true))
+    requestAgent
+    .put(Api.translate.setStageToVoiceoverTranslationDone(articleId))
+    .then(() => {
+        NotificationService.success('Successfuly marked voice over translation as done');
+        dispatch(setStageLoading(false))
+        setTimeout(() => {
+            window.location.reload();
+        }, 1500);
+    })
+    .catch(err => {
+        console.log(err);
+        dispatch(setStageLoading(false))
+        NotificationService.responseError(err);
+    })
+}
+
+export const approveVoiceoverTranslation = (articleId) => (dispatch) => {
+    dispatch(setStageLoading(true))
+    requestAgent
+    .put(Api.translate.setStageToDone(articleId))
+    .then(() => {
+        NotificationService.success('Successfuly approved voice over translation');
+        dispatch(setStageLoading(false))
+        setTimeout(() => {
+            window.location.reload();
+        }, 1500);
+    })
+    .catch(err => {
+        console.log(err);
+        dispatch(setStageLoading(false))
+        NotificationService.responseError(err);
+    })
+}
 
 export const setFindAndReplaceModalVisible = (visible) => ({
     type: actionTypes.SET_FIND_AND_REPLACE_MODAL_VISIBLE,

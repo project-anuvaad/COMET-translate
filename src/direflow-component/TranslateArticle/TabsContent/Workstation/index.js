@@ -213,9 +213,6 @@ class Workstation extends React.Component {
     canModify = () => {
         const { translatableArticle, user, organization, currentSlideIndex, currentSubslideIndex } = this.props;
         if (!translatableArticle) return false;
-        // const userOrgRole = getUserOrganziationRole(user, organization);
-        // if (!userOrgRole) return false;
-        // if (userOrgRole.organizationOwner || userOrgRole.permissions.indexOf('admin') !== -1 || userOrgRole.permissions.indexOf('translate') !== -1) return true;
         if (canUserAccess(user, organization, [
             'admin',
             'translate',
@@ -226,6 +223,79 @@ class Workstation extends React.Component {
             return true;
         }
         return false;
+    }
+
+    canModifyText = () => {
+        const { user, organization, translatableArticle } = this.props;
+        if (!translatableArticle || !user || !organization) return false;
+        const { textTranslators, translators, verifiers } = translatableArticle;
+        // admins and project leaders can modify text directly
+        if (canUserAccess(user, organization, ['admin', 'project_leader'])) return true;
+        // If the article is not in text_translation or text_translation_done stages, prohibit text update
+        if (translatableArticle.stage && ['text_translation', 'text_translation_done'].indexOf(translatableArticle.stage) === -1) return false;
+        // if verifier and stage is text_translation_done he can edit the text
+        if (translatableArticle.stage === 'text_translation_done' && verifiers && verifiers.length > 0 && verifiers.indexOf(user._id) !== -1) {
+            return true;
+        }
+        // If there's assigned text translators users, then only him can modify the text
+        if (textTranslators && textTranslators.length > 0) {
+            if (textTranslators.map(t => t.user).indexOf(user._id) !== -1) {
+                return true;
+            }
+            return false;
+        }
+        // if there's transltors and he's assigned to that article, he can update the text
+        if (translators && translators.length > 0) {
+            if (translators.map(t => t.user).indexOf(user._id) !== -1) {
+                return true;
+            }
+            return false;
+        }
+        // NO users assigned and not an admin
+        // then if he has translate or translate_text permissions he can edit
+        return canUserAccess(user, organization, ['translate', 'translate_text']);
+    }
+
+    canModifyAudio = () => {
+        const { user, organization, translatableArticle } = this.props;
+        if (!translatableArticle || !user || !organization) return false;
+        // admins and project leaders can modify audio directly
+        if (canUserAccess(user, organization, ['admin', 'project_leader'])) return true;
+        // If the article is not in voice_over_translation or voice_over_translation_done stages, prohibit audio update
+        if (translatableArticle.stage && ['voice_over_translation', 'voice_over_translation_done'].indexOf(translatableArticle.stage) === -1) return false;
+        // if there's transltors and he's assigned to that article, he can update the audio 
+        const { translators } = translatableArticle;
+        if (translators && translators.length > 0) {
+            if (translators.map(t => t.user).indexOf(user._id) !== -1) {
+                return true;
+            }
+            return false;
+        }
+        // NO users assigned and not an admin
+        // then if he has translate or translate_text permissions he can edit
+        return canUserAccess(user, organization, ['translate', 'voice_over_artist']);
+    }
+
+    canApproveTranslation = () => {
+        const { user, organization, translatableArticle } = this.props;
+        if (!translatableArticle || !user || !organization) return false;
+        // admins and project leaders can approve translations directly
+        if (!translatableArticle.stage) return false;
+        // If the article is not in text_translation_done or voice_over_translation_done stages, prohibit approval
+        if (['text_translation_done', 'voice_over_translation_done'].indexOf(translatableArticle.stage) === -1) return false;
+        if (canUserAccess(user, organization, ['admin', 'project_leader'])) return true;
+        // if there's transltors and he's assigned to that article, he can update the audio 
+        const { verifiers } = translatableArticle;
+        if (verifiers && verifiers.length > 0) {
+            if (verifiers.indexOf(user._id) !== -1) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        // NO users assigned and not an admin
+        // then if he has translate or approve_translations permissions he can approve 
+        return canUserAccess(user, organization, ['translate', 'approve_translations']);
     }
 
     onVideoLoad = (e) => {
@@ -372,6 +442,20 @@ class Workstation extends React.Component {
         if (!translatableArticle || !translatableArticle.translators || translatableArticle.translators.length === 0) return false;
         const assignedTranslations = translatableArticle.translators.filter((t) => t.user === user._id);
         return assignedTranslations;
+    }
+
+    isAssignedForTextTranslations = () => {
+        const { translatableArticle, user } = this.props;
+        if (!translatableArticle || !translatableArticle.textTranslators || translatableArticle.textTranslators.length === 0) return false;
+        const assignedTranslations = translatableArticle.textTranslators.filter((t) => t.user === user._id);
+        return assignedTranslations.length > 0;
+    }
+    
+    isAssignedAsApprover = () => {
+        const { translatableArticle, user } = this.props;
+        if (!translatableArticle || !translatableArticle.verifiers || translatableArticle.verifiers.length === 0) return false;
+        const assignedVerifiers = translatableArticle.verifiers.filter((u) => u === user._id);
+        return assignedVerifiers.length > 0;
     }
 
     getSelectedTranslator = () => {
@@ -548,7 +632,7 @@ class Workstation extends React.Component {
                 <Button
                     circular
                     basic
-                    disabled={!this.canModify()}
+                    disabled={disabled}
                     icon="cloud upload"
                     color="teal"
                     onClick={() => document.getElementById('upload-audio-input').click()}
@@ -717,22 +801,6 @@ class Workstation extends React.Component {
                     {subslide && subslide.picInPicVideoUrl && (
                         <div>
                             <div style={{ marginBottom: 10, marginTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                {/* <Popup
-                                    content="coming soon"
-                                    trigger={(
-                                        <Button
-                                            // icon
-                                            circular
-                                            // ="left"
-                                            // loading={this.props.uploadPictureInPictureLoading}
-                                            disabled={true}
-                                            // onClick={this.toggleRecord}
-                                            color={this.state.recording ? 'red' : 'green'}
-                                        >
-                                            <Icon name="video" style={{ marginRight: 10 }} /> Record
-                                        </Button>
-                                    )}
-                                /> */}
                                 <div>
                                     <small style={{ backgroundColor: this.state.highlightMaxTime ? 'yellow' : 'transparent', padding: '0.2rem' }}>Maximum limit: {parseFloat(subslide.media[0].duration).toFixed(2)} seconds</small>
                                 </div>
@@ -793,6 +861,9 @@ class Workstation extends React.Component {
             }
         }
 
+        const canModifyText = this.canModifyText();
+        const canModifyAudio = this.canModifyAudio();
+
         return (
             <React.Fragment>
                 {!this.props.preview ? (
@@ -810,147 +881,150 @@ class Workstation extends React.Component {
                                     onFindAndReplaceClose={() => this.props.setFindAndReplaceModalVisible(false)}
                                     value={translatableArticle.slides[currentSlideIndex].content[currentSubslideIndex].text || ''}
                                     onSave={this.onSaveTranslatedText}
-                                    disabled={!canModify}
+                                    disabled={!canModify || !canModifyText}
                                     currentSlideIndex={currentSlideIndex}
                                     currentSubslideIndex={currentSubslideIndex}
                                     translationVersionsCount={this.props.translationVersionsCount}
                                     onOpenTranslationVersions={() => this.setState({ translationVersionModalVisible: true })}
                                 />
                             )}
+                            {canModifyAudio && (
 
-                            <div className="c-export-human-voice__recorder-container">
+                                <div className="c-export-human-voice__recorder-container">
 
-                                {subslide.tmpAudio ? (
-                                    <React.Fragment>
-
-                                        <Popup
-                                            trigger={
-                                                <Button
-                                                    icon="check"
-                                                    primary
-                                                    circular
-                                                    style={{ marginRight: 10 }}
-                                                    loading={this.isCurrentSlideLoading()}
-                                                    disabled={this.isCurrentSlideLoading()}
-                                                    onClick={() => {
-                                                        this.props.saveRecordedTranslation(slide.position, subslide.position, subslide.recordedBlob);
-                                                    }}
-                                                />
-                                            }
-                                            content="Confirm and Upload recorded audio"
-                                        />
-                                        <Popup
-                                            trigger={
-                                                <Button
-                                                    icon="close"
-                                                    color="red"
-                                                    circular
-                                                    onClick={() => this.setState({ isDeleteRecordingModalVisible: true })}
-                                                />
-                                            }
-                                            content={(subslide.tmpAudio && subslide.audio) ? 'Restore original audio' : 'Delete current record'}
-                                        />
-                                        <DeleteModalRecording
-                                            open={this.state.isDeleteRecordingModalVisible}
-                                            onClose={() => this.setState({ isDeleteRecordingModalVisible: false })}
-                                            onConfirm={() => {
-                                                if (subslide.tmpAudio) {
-                                                    this.props.deleteTmpRecordedTranslation(slide.position, subslide.position);
-                                                } else {
-                                                    this.props.deleteRecordedTranslation(slide.position, subslide.position);
-                                                }
-                                                this.setState({ isDeleteRecordingModalVisible: false })
-                                            }}
-                                        />
-                                    </React.Fragment>
-                                ) : (
+                                    {subslide.tmpAudio ? (
                                         <React.Fragment>
-                                            <div className="c-export-human-voice__recorder-mic-container">
-                                                {translatableArticle.tts && (
-                                                    <React.Fragment>
 
-                                                        <Popup
-                                                            content="Re-generate TTS audio"
-                                                            trigger={
-                                                                <Button
-                                                                    primary
-                                                                    // size="large"
-                                                                    icon="refresh"
-                                                                    help="Sync Audio"
-                                                                    circular
-                                                                    style={{ marginRight: 10 }}
-                                                                    loading={this.isCurrentSlideLoading()}
-                                                                    disabled={this.isCurrentSlideLoading() || (subslide && subslide.audioSynced)}
-                                                                    onClick={() => this.onGenerateTTSAudio()}
-                                                                />
-                                                            }
-                                                        />
-                                                    </React.Fragment>
-                                                )}
-                                                {!translatableArticle.tts && (
-                                                    <AudioRecorder
+                                            <Popup
+                                                trigger={
+                                                    <Button
+                                                        icon="check"
+                                                        primary
+                                                        circular
                                                         style={{ marginRight: 10 }}
-                                                        record={recording}
                                                         loading={this.isCurrentSlideLoading()}
-                                                        showLabel={!subslide.audio}
-                                                        disabled={!canModify || this.isCurrentSlideLoading()}
-                                                        onStart={this.toggleRecording}
-                                                        maxDuration={translatableArticle.slides[currentSlideIndex].content[currentSubslideIndex].media[0].duration}
-                                                        className="c-export-human-voice__recorder-mic"
-                                                        onStop={this.onRecordingStop}
-                                                        backgroundColor="#2185d0"
-                                                        strokeColor="#000000"
+                                                        disabled={this.isCurrentSlideLoading()}
+                                                        onClick={() => {
+                                                            this.props.saveRecordedTranslation(slide.position, subslide.position, subslide.recordedBlob);
+                                                        }}
                                                     />
-                                                )}
-                                            </div>
-                                            {!recording && !translatableArticle.tts && this._renderUploadAudio.bind(this)(!canModify)}
+                                                }
+                                                content="Confirm and Upload recorded audio"
+                                            />
+                                            <Popup
+                                                trigger={
+                                                    <Button
+                                                        icon="close"
+                                                        color="red"
+                                                        circular
+                                                        disabled={this.isCurrentSlideLoading()}
+                                                        onClick={() => this.setState({ isDeleteRecordingModalVisible: true })}
+                                                    />
+                                                }
+                                                content={(subslide.tmpAudio && subslide.audio) ? 'Restore original audio' : 'Delete current record'}
+                                            />
+                                            <DeleteModalRecording
+                                                open={this.state.isDeleteRecordingModalVisible}
+                                                onClose={() => this.setState({ isDeleteRecordingModalVisible: false })}
+                                                onConfirm={() => {
+                                                    if (subslide.tmpAudio) {
+                                                        this.props.deleteTmpRecordedTranslation(slide.position, subslide.position);
+                                                    } else {
+                                                        this.props.deleteRecordedTranslation(slide.position, subslide.position);
+                                                    }
+                                                    this.setState({ isDeleteRecordingModalVisible: false })
+                                                }}
+                                            />
                                         </React.Fragment>
-                                    )}
-                                {subslide && (subslide.audio || subslide.tmpAudio) && !recording && (
-                                    <div className="c-export-human-voice__audio_container" >
-                                        <audio
-                                            key={`audio-player-${subslide.tmpAudio || subslide.audio}`}
-                                            controls
-                                            onPlay={this.onPlay}
-                                            onPause={this.onPause}
-                                            onEnded={this.onEnded}
-                                        >
-                                            <source src={subslide.tmpAudio || subslide.audio} />
+                                    ) : (
+                                            <React.Fragment>
+                                                <div className="c-export-human-voice__recorder-mic-container">
+                                                    {translatableArticle.tts && (
+                                                        <React.Fragment>
+
+                                                            <Popup
+                                                                content="Re-generate TTS audio"
+                                                                trigger={
+                                                                    <Button
+                                                                        primary
+                                                                        // size="large"
+                                                                        icon="refresh"
+                                                                        help="Sync Audio"
+                                                                        circular
+                                                                        style={{ marginRight: 10 }}
+                                                                        loading={this.isCurrentSlideLoading()}
+                                                                        disabled={this.isCurrentSlideLoading() || (subslide && subslide.audioSynced)}
+                                                                        onClick={() => this.onGenerateTTSAudio()}
+                                                                    />
+                                                                }
+                                                            />
+                                                        </React.Fragment>
+                                                    )}
+                                                    {!translatableArticle.tts && (
+                                                        <AudioRecorder
+                                                            style={{ marginRight: 10 }}
+                                                            record={recording}
+                                                            loading={this.isCurrentSlideLoading()}
+                                                            showLabel={!subslide.audio}
+                                                            disabled={!canModify || this.isCurrentSlideLoading()}
+                                                            onStart={this.toggleRecording}
+                                                            maxDuration={translatableArticle.slides[currentSlideIndex].content[currentSubslideIndex].media[0].duration}
+                                                            className="c-export-human-voice__recorder-mic"
+                                                            onStop={this.onRecordingStop}
+                                                            backgroundColor="#2185d0"
+                                                            strokeColor="#000000"
+                                                        />
+                                                    )}
+                                                </div>
+                                                {!recording && !translatableArticle.tts && this.canModifyAudio() && this._renderUploadAudio.bind(this)(!canModify)}
+                                            </React.Fragment>
+                                        )}
+                                    {subslide && (subslide.audio || subslide.tmpAudio) && !recording && (
+                                        <div className="c-export-human-voice__audio_container" >
+                                            <audio
+                                                key={`audio-player-${subslide.tmpAudio || subslide.audio}`}
+                                                controls
+                                                onPlay={this.onPlay}
+                                                onPause={this.onPause}
+                                                onEnded={this.onEnded}
+                                            >
+                                                <source src={subslide.tmpAudio || subslide.audio} />
                                             Your browser does not support the audio element.
                                             </audio>
 
-                                        {canModify && subslide && !subslide.tmpAudio && !this.isCurrentSlideLoading() && (
-                                            <React.Fragment>
-                                                <Popup
-                                                    trigger={
-                                                        <Icon
-                                                            name="close"
-                                                            className="c-export-human-voice__clear-record"
-                                                            onClick={() => {
-                                                                this.setState({ isDeleteRecordingModalVisible: true })
-                                                            }}
-                                                        />
-                                                    }
-                                                    content={(subslide.tmpAudio && subslide.audio) ? 'Restore original audio' : 'Delete current record'}
-                                                />
-                                                <DeleteModalRecording
-                                                    open={this.state.isDeleteRecordingModalVisible}
-                                                    onClose={() => this.setState({ isDeleteRecordingModalVisible: false })}
-                                                    onConfirm={() => {
-                                                        if (subslide.tmpAudio) {
-                                                            this.props.deleteTmpRecordedTranslation(slide.position, subslide.position);
-                                                        } else {
-                                                            this.props.deleteRecordedTranslation(slide.position, subslide.position);
+                                            {canModify && subslide && !subslide.tmpAudio && !this.isCurrentSlideLoading() && (
+                                                <React.Fragment>
+                                                    <Popup
+                                                        trigger={
+                                                            <Icon
+                                                                name="close"
+                                                                className="c-export-human-voice__clear-record"
+                                                                onClick={() => {
+                                                                    this.setState({ isDeleteRecordingModalVisible: true })
+                                                                }}
+                                                            />
                                                         }
-                                                        this.setState({ isDeleteRecordingModalVisible: false })
-                                                    }}
-                                                />
-                                            </React.Fragment>
-                                        )}
-                                    </div>
-                                )}
+                                                        content={(subslide.tmpAudio && subslide.audio) ? 'Restore original audio' : 'Delete current record'}
+                                                    />
+                                                    <DeleteModalRecording
+                                                        open={this.state.isDeleteRecordingModalVisible}
+                                                        onClose={() => this.setState({ isDeleteRecordingModalVisible: false })}
+                                                        onConfirm={() => {
+                                                            if (subslide.tmpAudio) {
+                                                                this.props.deleteTmpRecordedTranslation(slide.position, subslide.position);
+                                                            } else {
+                                                                this.props.deleteRecordedTranslation(slide.position, subslide.position);
+                                                            }
+                                                            this.setState({ isDeleteRecordingModalVisible: false })
+                                                        }}
+                                                    />
+                                                </React.Fragment>
+                                            )}
+                                        </div>
+                                    )}
 
-                            </div>
+                                </div>
+                            )}
 
                             {translatableArticle.tts && canSyncAll && (
                                 <Button
@@ -1012,9 +1086,15 @@ class Workstation extends React.Component {
         const { slide, subslide } = this.getCurrentSlideAndSubslide();
         const canModify = this.canModify();
         const assignedTranslations = this.getUserAssignedTranslations();
+        const isAssignedForTextTranslations = this.isAssignedForTextTranslations();
+        const isAssignedAsApprover = this.isAssignedAsApprover();
         const selectedTranslator = this.getSelectedTranslator();
         const speakerTranslatorsMap = this.getSpeakersTranslatorsMap();
         const versionedSubslides = this.getVersionedSubslides();
+
+        const canApproveTranslation = this.canApproveTranslation();
+        const canModifyAudio = this.canModifyAudio();
+        const canModifyText = this.canModifyText();
 
         return (
             <Styled styles={styles}>
@@ -1162,16 +1242,87 @@ class Workstation extends React.Component {
                                         </Grid.Column>
 
                                         <Grid.Column width={6}>
-                                            <Button
-                                                primary
-                                                circular
-                                                disabled={!this.canExport()}
-                                                onClick={this.onExport}
-                                                style={{ position: 'absolute', top: '-5.5rem', right: 0 }}
-                                            >
-                                                Send to Export
-                                                <Icon name="arrow right" style={{ marginLeft: 10 }} />
-                                            </Button>
+                                            {translatableArticle.stage && (
+                                                <React.Fragment>
+                                                    {translatableArticle.stage === 'text_translation' && canModifyText && (
+                                                        <Button
+                                                            primary
+                                                            circular
+                                                            disabled={this.props.stageLoading}
+                                                            loading={this.props.stageLoading}
+                                                            onClick={() => this.props.markTextTranslationAsDone(translatableArticle._id)}
+                                                            style={{ position: 'absolute', top: '-5.5rem', right: 0 }}
+                                                        >
+                                                            Mark text translation as done
+                                                            <Icon name="check circle" style={{ marginLeft: 10 }} />
+                                                        </Button>
+                                                    )}
+                                                    {translatableArticle.stage === 'text_translation_done' && canApproveTranslation && (
+                                                        <Button
+                                                            primary
+                                                            circular
+                                                            disabled={this.props.stageLoading}
+                                                            loading={this.props.stageLoading}
+                                                            onClick={() => this.props.approveTextTranslation(translatableArticle._id)}
+                                                            style={{ position: 'absolute', top: '-5.5rem', right: 0 }}
+                                                        >
+                                                            Approve text translation
+                                                            <Icon name="check circle" style={{ marginLeft: 10 }} />
+                                                        </Button>
+                                                    )}
+                                                    {translatableArticle.stage === 'voice_over_translation' && canModifyAudio && (
+                                                        <Button
+                                                            primary
+                                                            circular
+                                                            disabled={this.props.stageLoading}
+                                                            loading={this.props.stageLoading}
+                                                            onClick={() => this.props.markVoiceTranslationAsDone(translatableArticle._id)}
+                                                            style={{ position: 'absolute', top: '-5.5rem', right: 0 }}
+                                                        >
+                                                            Mark voice over translation as done
+                                                            <Icon name="check circle" style={{ marginLeft: 10 }} />
+                                                        </Button>
+                                                    )}
+                                                    {translatableArticle.stage === 'voice_over_translation_done' && canApproveTranslation && (
+                                                        <Button
+                                                            primary
+                                                            circular
+                                                            disabled={this.props.stageLoading}
+                                                            loading={this.props.stageLoading}
+                                                            onClick={() => this.props.approveVoiceoverTranslation(translatableArticle._id)}
+                                                            style={{ position: 'absolute', top: '-5.5rem', right: 0 }}
+                                                        >
+                                                            Approve voice over translation
+                                                            <Icon name="check circle" style={{ marginLeft: 10 }} />
+                                                        </Button>
+                                                    )}
+                                                    {translatableArticle.stage === 'done' && (
+                                                        <Button
+                                                            primary
+                                                            circular
+                                                            disabled={!this.canExport()}
+                                                            onClick={this.onExport}
+                                                            style={{ position: 'absolute', top: '-5.5rem', right: 0 }}
+                                                        >
+                                                            Send to Export
+                                                            <Icon name="arrow right" style={{ marginLeft: 10 }} />
+                                                        </Button>
+                                                    )}
+                                                </React.Fragment>
+                                            )}
+                                            {!translatableArticle.stage && (
+                                                <Button
+                                                    primary
+                                                    circular
+                                                    disabled={!this.canExport()}
+                                                    onClick={this.onExport}
+                                                    style={{ position: 'absolute', top: '-5.5rem', right: 0 }}
+                                                >
+                                                    Send to Export
+                                                    <Icon name="arrow right" style={{ marginLeft: 10 }} />
+                                                </Button>
+
+                                            )}
 
                                             <Button
                                                 circular
@@ -1203,24 +1354,31 @@ class Workstation extends React.Component {
                                                         </Grid.Column>
                                                     </Grid.Row>
                                                 )}
+                                                {isAssignedForTextTranslations ? (
+                                                    <strong>
+                                                        <span style={{ display: 'inline-block', marginBottom: 10 }}>
+                                                            You're assiged to translate the text of the video 
+                                                        </span>
+                                                    </strong>
+                                                ) : null}
+
                                                 {/* Show user if he's assigned to translate for any speaker here */}
                                                 {assignedTranslations && assignedTranslations.length > 0 ? (
                                                     <strong>
                                                         <span style={{ display: 'inline-block', marginBottom: 10 }}>
-                                                            You're assiged to translate for Speaker(s) {assignedTranslations.map(t => t.speakerNumber).join(', ')}
+                                                            You're assiged to translate the audio for Speaker(s) {assignedTranslations.map(t => t.speakerNumber).join(', ')}
                                                         </span>
                                                     </strong>
-                                                ) : (
+                                                ) : null}
+
+                                                {isAssignedAsApprover ? (
+                                                    <strong>
                                                         <span style={{ display: 'inline-block', marginBottom: 10 }}>
-                                                            {(() => {
-                                                                const userOrgRole = getUserOrganziationRole(this.props.user, this.props.organization);
-                                                                if (!userOrgRole.organizationOwner && userOrgRole.permissions.indexOf('admin') === -1) {
-                                                                    return `You're not assigned to this video`;
-                                                                }
-                                                                return '';
-                                                            })()}
+                                                            You're assiged to verify and approve the translation
                                                         </span>
-                                                    )}
+                                                    </strong>
+                                                ) : null}
+
                                                 <Grid.Row>
                                                     <Grid.Column width={10}>
                                                         <h5>
@@ -1394,6 +1552,12 @@ const mapDispatchToProps = dispatch => ({
     setCurrentEditorIndexes: indexes => dispatch(translationActions.setCurrentEditorIndexes(indexes)),
 
     updateShowTranslationTutorial: (show) => dispatch(translationActions.updateShowTranslationTutorial(show)),
+
+    markTextTranslationAsDone: articleId => dispatch(translationActions.markTextTranslationAsDone(articleId)),
+    approveTextTranslation: (articleId) => dispatch(translationActions.approveTextTranslation(articleId)),
+    markVoiceTranslationAsDone: (articleId) => dispatch(translationActions.markVoiceTranslationAsDone(articleId)),
+    approveVoiceoverTranslation: (articleId) => dispatch(translationActions.approveVoiceoverTranslation(articleId)),
+    
 
     saveTranslatedText: (slidePositon, subslidePosition, text) => dispatch(translationActions.saveTranslatedText(slidePositon, subslidePosition, text)),
     findAndReplaceText: (find, replace) => dispatch(translationActions.findAndReplaceText(find, replace)),
