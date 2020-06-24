@@ -450,7 +450,7 @@ class Workstation extends React.Component {
         const assignedTranslations = translatableArticle.textTranslators.filter((t) => t.user === user._id);
         return assignedTranslations.length > 0;
     }
-    
+
     isAssignedAsApprover = () => {
         const { translatableArticle, user } = this.props;
         if (!translatableArticle || !translatableArticle.verifiers || translatableArticle.verifiers.length === 0) return false;
@@ -889,176 +889,180 @@ class Workstation extends React.Component {
                                 />
                             )}
                             {canModifyAudio && (
+                                <React.Fragment>
 
-                                <div className="c-export-human-voice__recorder-container">
 
-                                    {subslide.tmpAudio ? (
-                                        <React.Fragment>
+                                    <div className="c-export-human-voice__recorder-container">
 
-                                            <Popup
-                                                trigger={
-                                                    <Button
-                                                        icon="check"
-                                                        primary
-                                                        circular
-                                                        style={{ marginRight: 10 }}
-                                                        loading={this.isCurrentSlideLoading()}
-                                                        disabled={this.isCurrentSlideLoading()}
-                                                        onClick={() => {
-                                                            this.props.saveRecordedTranslation(slide.position, subslide.position, subslide.recordedBlob);
-                                                        }}
-                                                    />
-                                                }
-                                                content="Confirm and Upload recorded audio"
-                                            />
-                                            <Popup
-                                                trigger={
-                                                    <Button
-                                                        icon="close"
-                                                        color="red"
-                                                        circular
-                                                        disabled={this.isCurrentSlideLoading()}
-                                                        onClick={() => this.setState({ isDeleteRecordingModalVisible: true })}
-                                                    />
-                                                }
-                                                content={(subslide.tmpAudio && subslide.audio) ? 'Restore original audio' : 'Delete current record'}
-                                            />
-                                            <DeleteModalRecording
-                                                open={this.state.isDeleteRecordingModalVisible}
-                                                onClose={() => this.setState({ isDeleteRecordingModalVisible: false })}
-                                                onConfirm={() => {
-                                                    if (subslide.tmpAudio) {
-                                                        this.props.deleteTmpRecordedTranslation(slide.position, subslide.position);
-                                                    } else {
-                                                        this.props.deleteRecordedTranslation(slide.position, subslide.position);
-                                                    }
-                                                    this.setState({ isDeleteRecordingModalVisible: false })
-                                                }}
-                                            />
-                                        </React.Fragment>
-                                    ) : (
+                                        {subslide.tmpAudio ? (
                                             <React.Fragment>
-                                                <div className="c-export-human-voice__recorder-mic-container">
-                                                    {translatableArticle.tts && (
-                                                        <React.Fragment>
 
-                                                            <Popup
-                                                                content="Re-generate TTS audio"
-                                                                trigger={
-                                                                    <Button
-                                                                        primary
-                                                                        // size="large"
-                                                                        icon="refresh"
-                                                                        help="Sync Audio"
-                                                                        circular
-                                                                        style={{ marginRight: 10 }}
-                                                                        loading={this.isCurrentSlideLoading()}
-                                                                        disabled={this.isCurrentSlideLoading() || (subslide && subslide.audioSynced)}
-                                                                        onClick={() => this.onGenerateTTSAudio()}
-                                                                    />
-                                                                }
-                                                            />
-                                                        </React.Fragment>
-                                                    )}
-                                                    {!translatableArticle.tts && (
-                                                        <AudioRecorder
+                                                <Popup
+                                                    trigger={
+                                                        <Button
+                                                            icon="check"
+                                                            primary
+                                                            circular
                                                             style={{ marginRight: 10 }}
-                                                            record={recording}
                                                             loading={this.isCurrentSlideLoading()}
-                                                            showLabel={!subslide.audio}
-                                                            disabled={!canModify || this.isCurrentSlideLoading()}
-                                                            onStart={this.toggleRecording}
-                                                            maxDuration={translatableArticle.slides[currentSlideIndex].content[currentSubslideIndex].media[0].duration}
-                                                            className="c-export-human-voice__recorder-mic"
-                                                            onStop={this.onRecordingStop}
-                                                            backgroundColor="#2185d0"
-                                                            strokeColor="#000000"
+                                                            disabled={this.isCurrentSlideLoading()}
+                                                            onClick={() => {
+                                                                this.props.saveRecordedTranslation(slide.position, subslide.position, subslide.recordedBlob);
+                                                            }}
                                                         />
-                                                    )}
-                                                </div>
-                                                {!recording && !translatableArticle.tts && this.canModifyAudio() && this._renderUploadAudio.bind(this)(!canModify)}
+                                                    }
+                                                    content="Confirm and Upload recorded audio"
+                                                />
+                                                <Popup
+                                                    trigger={
+                                                        <Button
+                                                            icon="close"
+                                                            color="red"
+                                                            circular
+                                                            disabled={this.isCurrentSlideLoading()}
+                                                            onClick={() => this.setState({ isDeleteRecordingModalVisible: true })}
+                                                        />
+                                                    }
+                                                    content={(subslide.tmpAudio && subslide.audio) ? 'Restore original audio' : 'Delete current record'}
+                                                />
+                                                <DeleteModalRecording
+                                                    open={this.state.isDeleteRecordingModalVisible}
+                                                    onClose={() => this.setState({ isDeleteRecordingModalVisible: false })}
+                                                    onConfirm={() => {
+                                                        if (subslide.tmpAudio) {
+                                                            this.props.deleteTmpRecordedTranslation(slide.position, subslide.position);
+                                                        } else {
+                                                            this.props.deleteRecordedTranslation(slide.position, subslide.position);
+                                                        }
+                                                        this.setState({ isDeleteRecordingModalVisible: false })
+                                                    }}
+                                                />
                                             </React.Fragment>
-                                        )}
-                                    {subslide && (subslide.audio || subslide.tmpAudio) && !recording && (
-                                        <div className="c-export-human-voice__audio_container" >
-                                            <audio
-                                                key={`audio-player-${subslide.tmpAudio || subslide.audio}`}
-                                                controls
-                                                onPlay={this.onPlay}
-                                                onPause={this.onPause}
-                                                onEnded={this.onEnded}
-                                            >
-                                                <source src={subslide.tmpAudio || subslide.audio} />
+                                        ) : (
+                                                <React.Fragment>
+                                                    <div className="c-export-human-voice__recorder-mic-container">
+                                                        {translatableArticle.tts && (
+                                                            <React.Fragment>
+
+                                                                <Popup
+                                                                    content="Re-generate TTS audio"
+                                                                    trigger={
+                                                                        <Button
+                                                                            primary
+                                                                            // size="large"
+                                                                            icon="refresh"
+                                                                            help="Sync Audio"
+                                                                            circular
+                                                                            style={{ marginRight: 10 }}
+                                                                            loading={this.isCurrentSlideLoading()}
+                                                                            disabled={this.isCurrentSlideLoading() || (subslide && subslide.audioSynced)}
+                                                                            onClick={() => this.onGenerateTTSAudio()}
+                                                                        />
+                                                                    }
+                                                                />
+                                                            </React.Fragment>
+                                                        )}
+                                                        {!translatableArticle.tts && (
+                                                            <AudioRecorder
+                                                                style={{ marginRight: 10 }}
+                                                                record={recording}
+                                                                loading={this.isCurrentSlideLoading()}
+                                                                showLabel={!subslide.audio}
+                                                                disabled={!canModify || this.isCurrentSlideLoading()}
+                                                                onStart={this.toggleRecording}
+                                                                maxDuration={translatableArticle.slides[currentSlideIndex].content[currentSubslideIndex].media[0].duration}
+                                                                className="c-export-human-voice__recorder-mic"
+                                                                onStop={this.onRecordingStop}
+                                                                backgroundColor="#2185d0"
+                                                                strokeColor="#000000"
+                                                            />
+                                                        )}
+                                                    </div>
+                                                    {!recording && !translatableArticle.tts && this.canModifyAudio() && this._renderUploadAudio.bind(this)(!canModify)}
+                                                </React.Fragment>
+                                            )}
+                                        {subslide && (subslide.audio || subslide.tmpAudio) && !recording && (
+                                            <div className="c-export-human-voice__audio_container" >
+                                                <audio
+                                                    key={`audio-player-${subslide.tmpAudio || subslide.audio}`}
+                                                    controls
+                                                    onPlay={this.onPlay}
+                                                    onPause={this.onPause}
+                                                    onEnded={this.onEnded}
+                                                >
+                                                    <source src={subslide.tmpAudio || subslide.audio} />
                                             Your browser does not support the audio element.
                                             </audio>
 
-                                            {canModify && subslide && !subslide.tmpAudio && !this.isCurrentSlideLoading() && (
-                                                <React.Fragment>
-                                                    <Popup
-                                                        trigger={
-                                                            <Icon
-                                                                name="close"
-                                                                className="c-export-human-voice__clear-record"
-                                                                onClick={() => {
-                                                                    this.setState({ isDeleteRecordingModalVisible: true })
-                                                                }}
-                                                            />
-                                                        }
-                                                        content={(subslide.tmpAudio && subslide.audio) ? 'Restore original audio' : 'Delete current record'}
-                                                    />
-                                                    <DeleteModalRecording
-                                                        open={this.state.isDeleteRecordingModalVisible}
-                                                        onClose={() => this.setState({ isDeleteRecordingModalVisible: false })}
-                                                        onConfirm={() => {
-                                                            if (subslide.tmpAudio) {
-                                                                this.props.deleteTmpRecordedTranslation(slide.position, subslide.position);
-                                                            } else {
-                                                                this.props.deleteRecordedTranslation(slide.position, subslide.position);
+                                                {canModify && subslide && !subslide.tmpAudio && !this.isCurrentSlideLoading() && (
+                                                    <React.Fragment>
+                                                        <Popup
+                                                            trigger={
+                                                                <Icon
+                                                                    name="close"
+                                                                    className="c-export-human-voice__clear-record"
+                                                                    onClick={() => {
+                                                                        this.setState({ isDeleteRecordingModalVisible: true })
+                                                                    }}
+                                                                />
                                                             }
-                                                            this.setState({ isDeleteRecordingModalVisible: false })
-                                                        }}
-                                                    />
-                                                </React.Fragment>
-                                            )}
-                                        </div>
-                                    )}
+                                                            content={(subslide.tmpAudio && subslide.audio) ? 'Restore original audio' : 'Delete current record'}
+                                                        />
+                                                        <DeleteModalRecording
+                                                            open={this.state.isDeleteRecordingModalVisible}
+                                                            onClose={() => this.setState({ isDeleteRecordingModalVisible: false })}
+                                                            onConfirm={() => {
+                                                                if (subslide.tmpAudio) {
+                                                                    this.props.deleteTmpRecordedTranslation(slide.position, subslide.position);
+                                                                } else {
+                                                                    this.props.deleteRecordedTranslation(slide.position, subslide.position);
+                                                                }
+                                                                this.setState({ isDeleteRecordingModalVisible: false })
+                                                            }}
+                                                        />
+                                                    </React.Fragment>
+                                                )}
+                                            </div>
+                                        )}
 
-                                </div>
-                            )}
-
-                            {translatableArticle.tts && canSyncAll && (
-                                <Button
-                                    primary
-                                    circular
-                                    loading={this.props.syncAllLoading}
-                                    disabled={this.props.syncAllLoading}
-                                    onClick={() => this.onSyncAll('tts')}
-                                    content="Sync all"
-                                />
-                            )}
-                            {sameLang && (
-                                <React.Fragment>
-
-                                    <Button
-                                        primary
-                                        circular
-                                        loading={this.isCurrentSlideLoading()}
-                                        disabled={this.isCurrentSlideLoading() || subslide.audioSource === 'original'}
-                                        onClick={this.onUpdateAudioFromOriginal}
-                                        content="Sync original audio"
-                                    />
-                                    {canSyncAll && (
+                                    </div>
+                                    {translatableArticle.tts && canSyncAll && (
                                         <Button
                                             primary
                                             circular
                                             loading={this.props.syncAllLoading}
                                             disabled={this.props.syncAllLoading}
-                                            onClick={() => this.onSyncAll('original')}
+                                            onClick={() => this.onSyncAll('tts')}
                                             content="Sync all"
                                         />
                                     )}
+                                    {sameLang && (
+                                        <React.Fragment>
+
+                                            <Button
+                                                primary
+                                                circular
+                                                loading={this.isCurrentSlideLoading()}
+                                                disabled={this.isCurrentSlideLoading() || subslide.audioSource === 'original'}
+                                                onClick={this.onUpdateAudioFromOriginal}
+                                                content="Sync original audio"
+                                            />
+                                            {canSyncAll && (
+                                                <Button
+                                                    primary
+                                                    circular
+                                                    loading={this.props.syncAllLoading}
+                                                    disabled={this.props.syncAllLoading}
+                                                    onClick={() => this.onSyncAll('original')}
+                                                    content="Sync all"
+                                                />
+                                            )}
+                                        </React.Fragment>
+                                    )}
                                 </React.Fragment>
                             )}
+
+
                             {!translatableArticle.tts && (
                                 <div>
                                     <small style={{ backgroundColor: this.state.highlightMaxTime ? 'yellow' : 'transparent', padding: '0.2rem' }} >Maximum limit: {parseInt(translatableArticle.slides[currentSlideIndex].content[currentSubslideIndex].media[0].duration)} seconds</small>
@@ -1357,7 +1361,7 @@ class Workstation extends React.Component {
                                                 {isAssignedForTextTranslations ? (
                                                     <strong>
                                                         <span style={{ display: 'inline-block', marginBottom: 10 }}>
-                                                            You're assiged to translate the text of the video 
+                                                            You're assiged to translate the text of the video
                                                         </span>
                                                     </strong>
                                                 ) : null}
@@ -1557,7 +1561,7 @@ const mapDispatchToProps = dispatch => ({
     approveTextTranslation: (articleId) => dispatch(translationActions.approveTextTranslation(articleId)),
     markVoiceTranslationAsDone: (articleId) => dispatch(translationActions.markVoiceTranslationAsDone(articleId)),
     approveVoiceoverTranslation: (articleId) => dispatch(translationActions.approveVoiceoverTranslation(articleId)),
-    
+
 
     saveTranslatedText: (slidePositon, subslidePosition, text) => dispatch(translationActions.saveTranslatedText(slidePositon, subslidePosition, text)),
     findAndReplaceText: (find, replace) => dispatch(translationActions.findAndReplaceText(find, replace)),
