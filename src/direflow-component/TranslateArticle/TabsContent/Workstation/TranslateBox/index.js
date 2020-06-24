@@ -51,42 +51,48 @@ class TranslateBox extends React.Component {
                             <h4 style={{ color: '#333333', margin: 0, padding: '1rem' }}>
                                 {title}
                             </h4>
-                            <Button
-                                basic
-                                className="translate-box__update-button"
-                                loading={loading}
-                                disabled={loading || value.trim() === this.props.value.trim() || !value.trim()}
-                                style={{ backgroundColor: 'transparent', boxShadow: 'none !important', margin: 0, padding: '1rem' }}
-                                onClick={() => this.props.onSave(value, this.props.currentSlideIndex, this.props.currentSubslideIndex)}
-                            >
-                                Update
-                            </Button>
+                            {!this.props.disabled && (
+                                <Button
+                                    basic
+                                    className="translate-box__update-button"
+                                    loading={loading}
+                                    disabled={loading || value.trim() === this.props.value.trim() || !value.trim()}
+                                    style={{ backgroundColor: 'transparent', boxShadow: 'none !important', margin: 0, padding: '1rem' }}
+                                    onClick={() => this.props.onSave(value, this.props.currentSlideIndex, this.props.currentSubslideIndex)}
+                                >
+                                    Update
+                                </Button>
+                            )}
                         </div>
                     </Card.Header>
                     <div
                         style={{ margin: 0, padding: 0, position: 'relative' }}
                     >
-                        <Popup
-                            trigger={
-                                <Button
-                                    icon="edit"
-                                    basic
-                                    onClick={this.props.onFindAndReplaceOpen}
-                                    style={{ position: 'absolute', right: -3, top: 1 }}
+                        {!this.props.disabled && (
+                            <React.Fragment>
+                                <Popup
+                                    trigger={
+                                        <Button
+                                            icon="edit"
+                                            basic
+                                            onClick={this.props.onFindAndReplaceOpen}
+                                            style={{ position: 'absolute', right: -3, top: 1 }}
+                                        />
+                                    }
+                                    content="Find and replace text"
                                 />
-                            }
-                            content="Find and replace text"
-                        />
-                        <Label onClick={this.props.onOpenTranslationVersions} className="translate-box__versions-available">{this.props.translationVersionsCount} versions available <Icon name="chevron down" /></Label>
+                                <Label onClick={this.props.onOpenTranslationVersions} className="translate-box__versions-available">{this.props.translationVersionsCount} versions available <Icon name="chevron down" /></Label>
+                            </React.Fragment>
+                        )}
+
                         <TextArea
-                            style={{ padding: 20, paddingRight: 40, width: '100%', border: 'none' }}
+                            style={{ padding: 20, paddingRight: 40, width: '100%', border: 'none', cursor: this.props.disabled ? 'not-allowed' : 'text' }}
                             disabled={this.props.disabled}
                             rows={6}
                             placeholder="Translate slide text"
                             value={value}
                             onChange={(e, { value }) => { this.onValueChange(value, this.props.currentSlideIndex, this.props.currentSubslideIndex) }}
                         />
-
                         {/* {this._renderSlideTranslateBox()} */}
                     </div>
 
