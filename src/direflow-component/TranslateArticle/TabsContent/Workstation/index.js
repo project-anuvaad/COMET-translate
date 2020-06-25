@@ -432,9 +432,9 @@ class Workstation extends React.Component {
     }
 
     getSpeakersTranslatorsMap = () => {
-        const { translatableArticle, organizationUsers } = this.props;
-        if (!translatableArticle || !organizationUsers) return {};
-        return getSpeakersTranslatorsMap(translatableArticle.speakersProfile, translatableArticle.translators, organizationUsers);
+        const { translatableArticle, users } = this.props;
+        if (!translatableArticle || !users) return {};
+        return getSpeakersTranslatorsMap(translatableArticle.speakersProfile, translatableArticle.translators, users);
     }
 
     getUserAssignedTranslations = () => {
@@ -656,6 +656,24 @@ class Workstation extends React.Component {
         );
     }
 
+    renderUserAvatar = user => {
+        const username = getUserNamePreview(user)
+
+        return <Popup
+            content={username}
+            trigger={
+                <span>
+                    <ReactAvatar
+                        round
+                        size={20}
+                        name={username}
+                        style={{ margin: '0 10px', display: 'inline-block' }}
+                    />
+                </span>
+            }
+        />
+    }
+
     renderLoadingLottie = () => {
         const defaultOptions = {
             loop: true,
@@ -854,11 +872,17 @@ class Workstation extends React.Component {
         }
         const versionedSubslides = this.getVersionedSubslides();
         let slideTitle = `Slide ${this.props.listIndex + 1}`;
+        let slideUser;
+
         if (versionedSubslides && versionedSubslides.length > 0) {
             const selectedVersion = versionedSubslides.findIndex(vs => vs.articleId === subslide.translationVersionArticleId);
             if (selectedVersion !== -1) {
                 slideTitle = <span>Slide {this.props.listIndex + 1} -<small> Translator {selectedVersion + 1}</small> </span>;
             }
+        }
+
+        if (translatableArticle.textTranslators && translatableArticle.textTranslators.length > 0 && this.props.users[translatableArticle.textTranslators[0].user]) {
+            slideUser = this.renderUserAvatar(this.props.users[translatableArticle.textTranslators[0].user]) 
         }
 
         const canModifyText = this.canModifyText();
@@ -871,7 +895,12 @@ class Workstation extends React.Component {
                         <Grid.Column computer={16} mobile={16}>
                             {translatableArticle.slides[currentSlideIndex] && (
                                 <TranslateBox
-                                    title={slideTitle}
+                                    title={(
+                                        <span>
+                                            {slideTitle}
+                                            {slideUser}
+                                        </span>
+                                    )}
                                     findAndReplaceModalVisible={this.props.findAndReplaceModalVisible}
                                     onFindAndReplaceSubmit={({ find, replace }) => {
                                         this.props.findAndReplaceText(find, replace);
@@ -1065,7 +1094,7 @@ class Workstation extends React.Component {
 
                             {!translatableArticle.tts && (
                                 <div>
-                                    <small style={{ backgroundColor: this.state.highlightMaxTime ? 'yellow' : 'transparent', padding: '0.2rem' }} >Maximum limit: {parseInt(translatableArticle.slides[currentSlideIndex].content[currentSubslideIndex].media[0].duration)} seconds</small>
+                                    <small style={{ backgroundColor: this.state.highlightMaxTime ? 'yellow' : 'transparent', padding: '0.2rem' }} >Maximum audio limit: {parseInt(translatableArticle.slides[currentSlideIndex].content[currentSubslideIndex].media[0].duration)} seconds</small>
                                 </div>
                             )}
                         </Grid.Column>

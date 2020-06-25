@@ -28,7 +28,6 @@ class TranslateArticleIndex extends React.Component {
 
 const mapStateToProps = ({ translateArticle }) => ({
     user: translateArticle.user,
-    organizationUsers: translateArticle.organizationUsers,
     organization: translateArticle.organization,
 })
 

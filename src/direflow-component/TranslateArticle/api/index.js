@@ -100,6 +100,7 @@ export default {
         respondToOrganizationInvitation: (organizationId) => `${getApiRoot()}/organization/${organizationId}/invitations/respond`,
     },
     user: {
+        getById: (id) => `${getApiRoot()}/user/${id}`,
         subscribeToApiDocs: () => `${getApiRoot()}/user/subscribe_api_docs`,
         resetPassword: () => `${getApiRoot()}/user/resetPassword`,
         getUserDetails: () => `${getApiRoot()}/user/getUserDetails`,

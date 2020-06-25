@@ -217,6 +217,24 @@ const setOrganizationUsers = users => ({
     payload: users,
 })
 
+const addUser = user => ({
+    type: actionTypes.ADD_USER,
+    payload: user,
+})
+
+const fetchUserById = userId => (dispatch) => {
+    requestAgent
+    .get(Api.user.getById(userId))
+    .then(({ body }) => {
+        const { user } = body;
+        dispatch(addUser(user));
+    }) 
+    .catch(err => {
+        console.log(err);
+    })
+}
+
+
 
 export const fetchUserData = () => dispatch => {
     requestAgent
@@ -579,6 +597,22 @@ export const fetchTranslatableArticle = ({ articleId, loading = true, langCode, 
         }
         dispatch(batchUpdateState(update));
         if (loading) {
+            // fetch article textTranslators and translators
+            if (article.textTranslators && article.textTranslators.length > 0) {
+                article.textTranslators.forEach(t => {
+                    dispatch(fetchUserById(t.user))
+                })
+            }
+            if (article.translators && article.translators.length > 0) {
+                article.translators.forEach(t => {
+                    dispatch(fetchUserById(t.user))
+                })
+            }
+            if (article.verifiers && article.verifiers.length > 0) {
+                article.verifiers.forEach(t => {
+                    dispatch(fetchUserById(t))
+                })
+            }
             // If there was prevously selected speaker, change the new viewed article's speaker
             if (selectedSpeakerNumber !== -1 && article.speakersProfile.find(s => s.speakerNumber === selectedSpeakerNumber)) {
                 dispatch(changeSelectedSpeakerNumber(selectedSpeakerNumber))

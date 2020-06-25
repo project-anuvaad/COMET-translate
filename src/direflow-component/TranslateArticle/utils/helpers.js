@@ -184,7 +184,7 @@ export function getSpeakersTranslatorsMap(speakersProfile, translators, users) {
   speakersProfile.forEach(spk => {
       const translatorIndex = assignedSpeakers.indexOf(spk.speakerNumber);
       if (translatorIndex !== -1 && translators[translatorIndex]) {
-          const assignedUser = users.find(u => u._id === translators[translatorIndex].user);
+          const assignedUser = users[translators[translatorIndex].user];
           if (assignedUser) {
               translatorsMap[spk.speakerNumber] = assignedUser;
           }

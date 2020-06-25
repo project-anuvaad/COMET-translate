@@ -2,7 +2,7 @@ import * as actionTypes from './types';
 
 const INITIAL_STATE = {
     jobs: {},
-    users: [],
+    users: {},
     user: null,
     organization: null,
     organizationUsers: [],
@@ -91,6 +91,10 @@ export default function (state = INITIAL_STATE, action) {
             return { ...state, user: action.payload };
         case actionTypes.SET_ORGANIZATION:
             return { ...state, organization: action.payload };
+        case actionTypes.ADD_USER:
+                const users = {...state.users};
+                users[action.payload._id] = action.payload;
+                return { ...state, users}
         case actionTypes.SET_STAGE_LOADING:
             return { ...state, stageLoading: action.payload };
         case actionTypes.SET_ORGANIZATION_USERS:

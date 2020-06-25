@@ -1,13 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types'
 import classnames from 'classnames';
-import { Grid, Icon, Button, Card } from 'semantic-ui-react';
+import { Grid, Icon, Button, Card, Popup } from 'semantic-ui-react';
 
 import { VIDEO_PLAYER_THUMBNAIL_IMAGE } from '../../constants';
 import { reduceSlidesSubslides, getUserNamePreview, formatTime } from '../../utils/helpers';
 
 import { Styled } from 'direflow-component';
 import styles from './style.scss';
+import ReactAvatar from 'react-avatar';
 
 class SlidesList extends React.Component {
   getsubSlideBorderColor(subslide) {
@@ -17,6 +18,23 @@ class SlidesList extends React.Component {
       return 'gray';
     }
   }
+  renderUserAvatar = user => {
+        const username = getUserNamePreview(user)
+
+        return <Popup
+            content={username}
+            trigger={
+                <span>
+                    <ReactAvatar
+                        round
+                        size={20}
+                        name={username}
+                        style={{ margin: '0 10px', display: 'inline-block' }}
+                    />
+                </span>
+            }
+        />
+    }
 
   renderSubslide(subslide, index, maxIndex) {
     let comp;
@@ -34,6 +52,8 @@ class SlidesList extends React.Component {
       comp = null
     }
     const { speakerTranslatorsMap } = this.props;
+    const userAvatar = speakerTranslatorsMap[subslide.speakerProfile.speakerNumber] ? this.renderUserAvatar(speakerTranslatorsMap[subslide.speakerProfile.speakerNumber]) : null;
+
     return (
       <Grid.Row
         key={`subslide-list-${subslide.position}-${subslide.slidePosition}`}
@@ -44,7 +64,7 @@ class SlidesList extends React.Component {
             className={classnames({ "slide-item": true, active: subslide.slideIndex === this.props.currentSlideIndex && subslide.subslideIndex === this.props.currentSubslideIndex })}
           >
             <span>
-              Slide {index + 1} - <small>Speaker {subslide.speakerProfile.speakerNumber}</small>
+              Slide {index + 1} - <small>Speaker {subslide.speakerProfile.speakerNumber}</small> {userAvatar || ''}
             </span>
             <div>
               <span className="timing">
