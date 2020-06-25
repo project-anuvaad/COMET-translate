@@ -882,7 +882,7 @@ class Workstation extends React.Component {
         }
 
         if (translatableArticle.textTranslators && translatableArticle.textTranslators.length > 0 && this.props.users[translatableArticle.textTranslators[0].user]) {
-            slideUser = this.renderUserAvatar(this.props.users[translatableArticle.textTranslators[0].user]) 
+            slideUser = this.renderUserAvatar(this.props.users[translatableArticle.textTranslators[0].user])
         }
 
         const canModifyText = this.canModifyText();
@@ -1153,6 +1153,90 @@ class Workstation extends React.Component {
                             {originalViewedArticle && translatableArticle && translatableArticle.translationProgress === 100 && !translatableArticle.videoSpeedLoading && (
                                 <React.Fragment>
                                     <Grid.Row>
+                                        <Grid.Column width={16}>
+                                            {translatableArticle.stage && (
+                                                <React.Fragment>
+                                                    <div
+                                                        style={{ position: 'absolute', top: '-5.5rem', right: 0, display: 'flex', alignItems: 'flex-end', flexDirection: 'column', zIndex: 2 }}
+                                                    >
+                                                        {canUserAccess(this.props.user, this.props.organization, ['admin', 'project_leader', 'translate', 'approve_translations']) && (
+                                                            <div style={{ marginBottom: '1rem', }}>
+                                                                <Button
+                                                                    primary
+                                                                    circular
+                                                                    disabled={translatableArticle.stage !== 'done' && !this.canExport()}
+                                                                    onClick={this.onExport}
+                                                                >
+                                                                    Send to Export
+                                                                <Icon name="arrow right" style={{ marginLeft: 10 }} />
+                                                                </Button>
+                                                            </div>
+                                                        )}
+                                                        {translatableArticle.stage === 'text_translation' && canModifyText && (
+                                                            <Button
+                                                                primary
+                                                                circular
+                                                                disabled={this.props.stageLoading}
+                                                                loading={this.props.stageLoading}
+                                                                onClick={() => this.props.markTextTranslationAsDone(translatableArticle._id)}
+                                                            >
+                                                                Mark text translation as done
+                                                                <Icon name="check circle" style={{ marginLeft: 10 }} />
+                                                            </Button>
+                                                        )}
+                                                        {translatableArticle.stage === 'text_translation_done' && canApproveTranslation && (
+                                                            <Button
+                                                                primary
+                                                                circular
+                                                                disabled={this.props.stageLoading}
+                                                                loading={this.props.stageLoading}
+                                                                onClick={() => this.props.approveTextTranslation(translatableArticle._id)}
+                                                            >
+                                                                Approve text translation
+                                                                <Icon name="check circle" style={{ marginLeft: 10 }} />
+                                                            </Button>
+                                                        )}
+                                                        {translatableArticle.stage === 'voice_over_translation' && canModifyAudio && (
+                                                            <Button
+                                                                primary
+                                                                circular
+                                                                disabled={this.props.stageLoading}
+                                                                loading={this.props.stageLoading}
+                                                                onClick={() => this.props.markVoiceTranslationAsDone(translatableArticle._id)}
+                                                            >
+                                                                Mark voice over translation as done
+                                                                <Icon name="check circle" style={{ marginLeft: 10 }} />
+                                                            </Button>
+                                                        )}
+                                                        {translatableArticle.stage === 'voice_over_translation_done' && canApproveTranslation && (
+                                                            <Button
+                                                                primary
+                                                                circular
+                                                                disabled={this.props.stageLoading}
+                                                                loading={this.props.stageLoading}
+                                                                onClick={() => this.props.approveVoiceoverTranslation(translatableArticle._id)}
+                                                            >
+                                                                Approve voice over translation
+                                                                <Icon name="check circle" style={{ marginLeft: 10 }} />
+                                                            </Button>
+                                                        )}
+                                                        <div style={{ marginTop: '1rem' }} >
+
+                                                            <Button
+                                                                circular
+                                                                color="green"
+                                                                size="tiny"
+                                                                onClick={() => this.setState({ isTranslatingVideoTutorialModalVisible: true })}
+                                                            >
+                                                                Translation Tutorial <Icon name="info circle" style={{ marginLeft: 10 }} />
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </React.Fragment>
+                                            )}
+                                        </Grid.Column>
+                                    </Grid.Row>
+                                    <Grid.Row>
                                         <Grid.Column width={10}>
                                             <Grid>
                                                 <Grid.Row>
@@ -1275,97 +1359,32 @@ class Workstation extends React.Component {
                                         </Grid.Column>
 
                                         <Grid.Column width={6}>
-                                            {translatableArticle.stage && (
-                                                <React.Fragment>
-                                                    {translatableArticle.stage === 'text_translation' && canModifyText && (
-                                                        <Button
-                                                            primary
-                                                            circular
-                                                            disabled={this.props.stageLoading}
-                                                            loading={this.props.stageLoading}
-                                                            onClick={() => this.props.markTextTranslationAsDone(translatableArticle._id)}
-                                                            style={{ position: 'absolute', top: '-5.5rem', right: 0 }}
-                                                        >
-                                                            Mark text translation as done
-                                                            <Icon name="check circle" style={{ marginLeft: 10 }} />
-                                                        </Button>
-                                                    )}
-                                                    {translatableArticle.stage === 'text_translation_done' && canApproveTranslation && (
-                                                        <Button
-                                                            primary
-                                                            circular
-                                                            disabled={this.props.stageLoading}
-                                                            loading={this.props.stageLoading}
-                                                            onClick={() => this.props.approveTextTranslation(translatableArticle._id)}
-                                                            style={{ position: 'absolute', top: '-5.5rem', right: 0 }}
-                                                        >
-                                                            Approve text translation
-                                                            <Icon name="check circle" style={{ marginLeft: 10 }} />
-                                                        </Button>
-                                                    )}
-                                                    {translatableArticle.stage === 'voice_over_translation' && canModifyAudio && (
-                                                        <Button
-                                                            primary
-                                                            circular
-                                                            disabled={this.props.stageLoading}
-                                                            loading={this.props.stageLoading}
-                                                            onClick={() => this.props.markVoiceTranslationAsDone(translatableArticle._id)}
-                                                            style={{ position: 'absolute', top: '-5.5rem', right: 0 }}
-                                                        >
-                                                            Mark voice over translation as done
-                                                            <Icon name="check circle" style={{ marginLeft: 10 }} />
-                                                        </Button>
-                                                    )}
-                                                    {translatableArticle.stage === 'voice_over_translation_done' && canApproveTranslation && (
-                                                        <Button
-                                                            primary
-                                                            circular
-                                                            disabled={this.props.stageLoading}
-                                                            loading={this.props.stageLoading}
-                                                            onClick={() => this.props.approveVoiceoverTranslation(translatableArticle._id)}
-                                                            style={{ position: 'absolute', top: '-5.5rem', right: 0 }}
-                                                        >
-                                                            Approve voice over translation
-                                                            <Icon name="check circle" style={{ marginLeft: 10 }} />
-                                                        </Button>
-                                                    )}
-                                                    {translatableArticle.stage === 'done' && (
-                                                        <Button
-                                                            primary
-                                                            circular
-                                                            disabled={!this.canExport()}
-                                                            onClick={this.onExport}
-                                                            style={{ position: 'absolute', top: '-5.5rem', right: 0 }}
-                                                        >
-                                                            Send to Export
-                                                            <Icon name="arrow right" style={{ marginLeft: 10 }} />
-                                                        </Button>
-                                                    )}
-                                                </React.Fragment>
-                                            )}
                                             {!translatableArticle.stage && (
-                                                <Button
-                                                    primary
-                                                    circular
-                                                    disabled={!this.canExport()}
-                                                    onClick={this.onExport}
-                                                    style={{ position: 'absolute', top: '-5.5rem', right: 0 }}
-                                                >
-                                                    Send to Export
+                                                <React.Fragment>
+
+                                                    <Button
+                                                        primary
+                                                        circular
+                                                        disabled={!this.canExport()}
+                                                        onClick={this.onExport}
+                                                        style={{ position: 'absolute', top: '-5.5rem', right: 0 }}
+                                                    >
+                                                        Send to Export
                                                     <Icon name="arrow right" style={{ marginLeft: 10 }} />
-                                                </Button>
+                                                    </Button>
+                                                    <Button
+                                                        circular
+                                                        color="green"
+                                                        size="tiny"
+                                                        style={{ position: 'absolute', right: 0, top: '-2rem', zIndex: 2 }}
+                                                        onClick={() => this.setState({ isTranslatingVideoTutorialModalVisible: true })}
+                                                    >
+                                                        Translation Tutorial <Icon name="info circle" style={{ marginLeft: 10 }} />
+                                                    </Button>
+                                                </React.Fragment>
 
                                             )}
 
-                                            <Button
-                                                circular
-                                                color="green"
-                                                size="tiny"
-                                                style={{ position: 'absolute', right: 0, top: '-2rem', zIndex: 2 }}
-                                                onClick={() => this.setState({ isTranslatingVideoTutorialModalVisible: true })}
-                                            >
-                                                Translation Tutorial <Icon name="info circle" style={{ marginLeft: 10 }} />
-                                            </Button>
                                             <Grid>
                                                 {this.props.translatableArticle && this.props.translatableArticle.signLang ? this.renderSignLangUpload() : this.renderTextForm()}
                                                 {this.props.selectedSpeakerNumber !== -1 && (
@@ -1456,7 +1475,7 @@ class Workstation extends React.Component {
                                                                         <span>
                                                                             All
                                                                         </span>
-                                                                        <RoleRenderer roles={['admin']}>
+                                                                        {/* <RoleRenderer roles={['admin']}>
                                                                             <Popup
                                                                                 trigger={
                                                                                     <Button
@@ -1472,7 +1491,7 @@ class Workstation extends React.Component {
                                                                                 content="Update assignees"
                                                                             />
                                                                             {this.renderAssignUsersModal()}
-                                                                        </RoleRenderer>
+                                                                        </RoleRenderer> */}
                                                                     </div>
                                                                 </Dropdown.Item>
                                                                 {originalViewedArticle.speakersProfile.map((sp) => (
