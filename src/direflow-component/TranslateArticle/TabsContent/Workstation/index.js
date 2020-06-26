@@ -40,7 +40,8 @@ import {
     getUserNamePreview,
     getSpeakersTranslatorsMap,
     displayArticleLanguage,
-    canUserAccess
+    canUserAccess,
+    getUserName
 } from '../../utils/helpers';
 
 import styles from './style.scss'
@@ -657,10 +658,11 @@ class Workstation extends React.Component {
     }
 
     renderUserAvatar = user => {
-        const username = getUserNamePreview(user)
+        const usernameAndEmail = getUserName(user)
+        const username = getUserNamePreview(user);
 
         return <Popup
-            content={username}
+            content={usernameAndEmail}
             trigger={
                 <span>
                     <ReactAvatar
@@ -882,7 +884,7 @@ class Workstation extends React.Component {
         }
 
         if (translatableArticle.textTranslators && translatableArticle.textTranslators.length > 0 && this.props.users[translatableArticle.textTranslators[0].user]) {
-            slideUser = this.renderUserAvatar(this.props.users[translatableArticle.textTranslators[0].user])
+            slideUser = this.props.users[translatableArticle.textTranslators[0].user]
         }
 
         const canModifyText = this.canModifyText();
@@ -898,7 +900,18 @@ class Workstation extends React.Component {
                                     title={(
                                         <span>
                                             {slideTitle}
-                                            {slideUser}
+                                            {slideUser && (
+                                                <React.Fragment>
+                                                    {this.renderUserAvatar(slideUser)}
+                                                    {translatableArticle.stage && translatableArticle.stage === 'text_translation' && !canModifyText && (
+                                                        <span className="text-translator-only">
+                                                            <strong>
+                                                                Text translation can be done by <span style={{ textTransform: 'capitalize' }}>{getUserNamePreview(slideUser) || slideUser.email}</span> only
+                                                            </strong>
+                                                        </span>
+                                                    )}
+                                                </React.Fragment>
+                                            )}
                                         </span>
                                     )}
                                     findAndReplaceModalVisible={this.props.findAndReplaceModalVisible}

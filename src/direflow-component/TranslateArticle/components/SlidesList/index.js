@@ -4,7 +4,7 @@ import classnames from 'classnames';
 import { Grid, Icon, Button, Card, Popup } from 'semantic-ui-react';
 
 import { VIDEO_PLAYER_THUMBNAIL_IMAGE } from '../../constants';
-import { reduceSlidesSubslides, getUserNamePreview, formatTime } from '../../utils/helpers';
+import { reduceSlidesSubslides, getUserNamePreview, formatTime, getUserName } from '../../utils/helpers';
 
 import { Styled } from 'direflow-component';
 import styles from './style.scss';
@@ -20,9 +20,10 @@ class SlidesList extends React.Component {
   }
   renderUserAvatar = user => {
         const username = getUserNamePreview(user)
+        const usernameAndEmail = getUserName(user);
 
         return <Popup
-            content={username}
+            content={usernameAndEmail}
             trigger={
                 <span>
                     <ReactAvatar
