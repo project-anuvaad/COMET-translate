@@ -1462,6 +1462,11 @@ class Workstation extends React.Component {
                                                                     }, 100);
                                                                 }}
                                                             />
+                                                            {translatableArticle && translatableArticle.verifiers && translatableArticle.verifiers.length > 0 ? translatableArticle.verifiers.map(v => (
+                                                                <span key={`verifier-play-icon-${v}`}>
+                                                                    {this.props.users[v] && this.renderUserAvatar(this.props.users[v])}
+                                                                </span>
+                                                            )): null}
                                                         </h5>
                                                     </Grid.Column>
                                                     <Grid.Column width={6} style={{ display: 'flex', justifyContent: 'flex-end' }}>
