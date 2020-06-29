@@ -69,6 +69,7 @@ export default {
         updateAudioFromOriginal: (translateableArticleId) => `${getApiRoot()}/translate/${translateableArticleId}/audio/original`,
         deleteRecordedTranslation: (translateableArticleId) => `${getApiRoot()}/translate/${translateableArticleId}/audio`,
         updateVideoSpeed: (translateableArticleId) => `${getApiRoot()}/translate/${translateableArticleId}/videoSpeed`,
+        updateAudioSpeed: (translateableArticleId) => `${getApiRoot()}/translate/${translateableArticleId}/audioSpeed`,
         getTranslationVersions: (translateableArticleId) => `${getApiRoot()}/translate/${translateableArticleId}/translationVersions`,
         getTranslationVersionsCount: (translateableArticleId) => `${getApiRoot()}/translate/${translateableArticleId}/translationVersions/count`,
         setTranslationVersionForSubslide: translateableArticleId => `${getApiRoot()}/translate/${translateableArticleId}/translationVersions/setTranslationVersionForSubslide`,

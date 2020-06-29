@@ -23,6 +23,7 @@ import AssignUsersSpeakersModal from '../../components/AssignUsersSpeakersModal'
 import RoleRenderer from '../../containers/RoleRenderer';
 import ProofreadingVideoPlayerV2 from '../../components/ProofreadingVideoPlayer/v2';
 import EditVideoSpeedModal from '../../components/EditVideoSpeedModal';
+import EditAudioSpeedModal from '../../components/EditAudioSpeedModal';
 
 // LOTTIES
 import aroundTheWorldLottie from '../../lottie/around-the-world.json';
@@ -260,6 +261,7 @@ class Workstation extends React.Component {
     canModifyAudio = () => {
         const { user, organization, translatableArticle } = this.props;
         if (!translatableArticle || !user || !organization) return false;
+        if (translatableArticle.tts) return true;
         // admins and project leaders can modify audio directly
         if (canUserAccess(user, organization, ['admin', 'project_leader'])) return true;
         // If the article is not in voice_over_translation or voice_over_translation_done stages, prohibit audio update
@@ -306,7 +308,6 @@ class Workstation extends React.Component {
             }
             this.videoRef.ontimeupdate = () => {
                 if (this.videoRef) {
-                    console.log('editor muted', this.props.editorMuted)
                     this.setState({ currentTime: this.videoRef.currentTime * 1000 });
                 }
             }
@@ -596,6 +597,11 @@ class Workstation extends React.Component {
         this.props.updateArticleVideoSpeed({ articleId: translatableArticle._id, type: slide, speed, slidePosition: currentSlide.position, subslidePosition: currentSubslide.position })
     }
 
+    onAudioSpeedChange = (speed, slide) => {
+        const { translatableArticle, currentSubslide, currentSlide } = this.props;
+        this.props.updateArticleAudioSpeed({ articleId: translatableArticle._id, type: slide, speed, slidePosition: currentSlide.position, subslidePosition: currentSubslide.position })
+    }
+    
     onPlay = () => {
         this.videoRef.play()
         this.props.setEditorPlaying(true)
@@ -985,7 +991,6 @@ class Workstation extends React.Component {
                                                     <div className="c-export-human-voice__recorder-mic-container">
                                                         {translatableArticle.tts && (
                                                             <React.Fragment>
-
                                                                 <Popup
                                                                     content="Re-generate TTS audio"
                                                                     trigger={
@@ -1077,6 +1082,15 @@ class Workstation extends React.Component {
                                             onClick={() => this.onSyncAll('tts')}
                                             content="Sync all"
                                         />
+                                    )}
+                                    {translatableArticle.tts && (
+                                        <div>
+                                            <EditAudioSpeedModal
+                                                value={this.props.currentSubslide && this.props.currentSubslide.audioSpeed ? this.props.currentSubslide.audioSpeed : 1}
+                                                slideIndex={this.props.listIndex}
+                                                onSubmit={this.onAudioSpeedChange}
+                                            />
+                                        </div>
                                     )}
                                     {sameLang && (
                                         <React.Fragment>
@@ -1419,30 +1433,30 @@ class Workstation extends React.Component {
                                                         </Grid.Column>
                                                     </Grid.Row>
                                                 )}
-                                                {isAssignedForTextTranslations ? (
+                                                {/* {isAssignedForTextTranslations ? (
                                                     <strong>
                                                         <span style={{ display: 'inline-block', marginBottom: 10 }}>
                                                             You're assiged to translate the text of the video
                                                         </span>
                                                     </strong>
-                                                ) : null}
+                                                ) : null} */}
 
                                                 {/* Show user if he's assigned to translate for any speaker here */}
-                                                {assignedTranslations && assignedTranslations.length > 0 ? (
+                                                {/* {assignedTranslations && assignedTranslations.length > 0 ? (
                                                     <strong>
                                                         <span style={{ display: 'inline-block', marginBottom: 10 }}>
                                                             You're assiged to translate the audio for Speaker(s) {assignedTranslations.map(t => t.speakerNumber).join(', ')}
                                                         </span>
                                                     </strong>
-                                                ) : null}
+                                                ) : null} */}
 
-                                                {isAssignedAsApprover ? (
+                                                {/* {isAssignedAsApprover ? (
                                                     <strong>
                                                         <span style={{ display: 'inline-block', marginBottom: 10 }}>
                                                             You're assiged to verify and approve the translation
                                                         </span>
                                                     </strong>
-                                                ) : null}
+                                                ) : null} */}
 
                                                 <Grid.Row>
                                                     <Grid.Column width={10}>
@@ -1658,6 +1672,7 @@ const mapDispatchToProps = dispatch => ({
     fetchUsers: (organizationId) => dispatch(translationActions.fetchUsers(organizationId)),
     updateTranslators: (articleId, translators) => dispatch(translationActions.updateTranslators(articleId, translators)),
     updateArticleVideoSpeed: (params) => dispatch(translationActions.updateArticleVideoSpeed(params)),
+    updateArticleAudioSpeed: (params) => dispatch(translationActions.updateArticleAudioSpeed(params)),
     setCCVisible: visible => dispatch(translationActions.setCCVisible(visible)),
     setCommentsSlidesIndexes: indexes => dispatch(translationActions.setCommentsSlidesIndexes(indexes)),
     setAddCommentSlideIndex: index => dispatch(translationActions.setAddCommentSlideIndex(index)),

@@ -1188,6 +1188,34 @@ export const requestExportTranslationReview = (articleId) => (dispatch, getState
     })
 }
 
+export const updateArticleAudioSpeed = ({articleId, speed, type, slidePosition, subslidePosition }) => (dispatch, getState) => {
+    const { translatableArticle, currentSlideIndex, currentSubslideIndex } = getState()[moduleName]
+    let slideIndex;
+    let subslideIndex;
+
+    if (type !== 'all') {
+        slideIndex = translatableArticle.slides.findIndex((s) => s.position === slidePosition);
+        subslideIndex = translatableArticle.slides[slideIndex].content.findIndex((s) => s.position === subslidePosition);
+        dispatch(addLoadingSlide(slideIndex, subslideIndex));
+    } else {
+        dispatch(addLoadingSlide(currentSlideIndex, currentSubslideIndex));
+    }
+
+    requestAgent
+    .post(Api.translate.updateAudioSpeed(articleId), { audioSpeed: speed, type, slidePosition, subslidePosition })
+    .then((res) => {
+        dispatch(fetchTranslatableArticle({ articleId: translatableArticle._id, loading: false }))
+        if (type !== 'all') {
+            dispatch(removeLoadingSlide(slideIndex, subslideIndex));
+        } else {
+            dispatch(removeLoadingSlide(currentSlideIndex, currentSubslideIndex));
+        }
+    })
+    .catch(err => {
+        console.log(err);
+        NotificationService.responseError(err);
+    })
+}
 
 export const updateArticleVideoSpeed = ({articleId, speed, type, slidePosition, subslidePosition }) => (dispatch, getState) => {
     requestAgent
