@@ -922,6 +922,8 @@ class Workstation extends React.Component {
                                     onFindAndReplaceOpen={() => this.props.setFindAndReplaceModalVisible(true)}
                                     onFindAndReplaceClose={() => this.props.setFindAndReplaceModalVisible(false)}
                                     value={translatableArticle.slides[currentSlideIndex].content[currentSubslideIndex].text || ''}
+                                    duration={translatableArticle.slides[currentSlideIndex].content[currentSubslideIndex].media[0].duration}
+                                    langCode={translatableArticle.langCode}
                                     onSave={this.onSaveTranslatedText}
                                     disabled={!canModify || !canModifyText}
                                     currentSlideIndex={currentSlideIndex}

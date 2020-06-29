@@ -17,6 +17,8 @@
     "query-string": "^6.8.1",
     "react": "16.10.2",
     "react-avatar": "^3.9.1",
+    "react-circular-progressbar": "^2.0.3",
+    "react-contenteditable": "^3.3.5",
     "react-datepicker": "^2.13.0",
     "react-dom": "16.10.2",
     "react-dropzone": "^10.2.1",
@@ -31,6 +33,7 @@
     "redux-logger": "^3.0.6",
     "redux-thunk": "^2.3.0",
     "semantic-ui-react": "^0.87.3",
+    "string-strip-html": "^4.5.0",
     "superagent": "^5.2.2",
     "superagent-use": "^0.1.0"
   },
