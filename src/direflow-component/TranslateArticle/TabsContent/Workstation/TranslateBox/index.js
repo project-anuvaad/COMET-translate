@@ -1,11 +1,14 @@
 import React from 'react';
-import { TextArea, Button, Popup, Card, Label, Icon } from 'semantic-ui-react';
+import { Button, Popup, Card, Label, Icon } from 'semantic-ui-react';
 import { debounce } from '../../../utils/helpers';
 import FindAndReplaceModal from '../../../components/FindAndReplaceModal';
 import { Styled } from 'direflow-component';
 import { CircularProgressBar, buildStyles } from '../../../components/CircularProgressBar';
-import ContentEditable from "react-contenteditable";
 import stripHtml from "string-strip-html";
+import { TextEditor } from '../../../components/ReactQuillEditor';
+import { EditorState, convertToRaw, ContentState } from 'draft-js';
+import draftToHtml from 'draftjs-to-html';
+import htmlToDraft from 'html-to-draftjs';
 import styles from './style.scss';
 
 const defaultWordsPerMinute = 120;
@@ -29,7 +32,9 @@ class TranslateBox extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            markup: '',
             value: '',
+            editorState: EditorState.createEmpty(),
             wordLimit: 0
         }
         this.saveValue = debounce((value, currentSlideIndex, currentSubslideIndex) => {
@@ -38,69 +43,57 @@ class TranslateBox extends React.Component {
     }
 
     componentDidMount() {
+        const contentBlock = htmlToDraft(this.props.value);
+        console.log('contentBlock', contentBlock);
+        
+        if (contentBlock) {
+            const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks);
+            const editorState = EditorState.createWithContent(contentState);
+            this.setState({ editorState, markup: this.props.value });
+        }
+
+        // this.setState({ value: this.props.value });
+        // if (this.state.value !== this.props.value) {
+        //     this.setState({ value: this.props.value });
+        // }
+
         const langWordsPerMinute = langsWordsPerMinute.find((l) => l.code === this.props.langCode);
         const wordsPerMinute = langWordsPerMinute ? langWordsPerMinute.limit : defaultWordsPerMinute;
         const wordLimit = Math.round(wordsPerMinute / 60 * this.props.duration);
         this.setState({ wordLimit });
-
-        if (this.state.value !== this.props.value) {
-            const valueArray= stripHtml(this.props.value.trim()).split(' ').filter(v => v);
-            if (valueArray.length > wordLimit) {
-                let removedItems = `<mark>${valueArray.splice(valueArray.length - (valueArray.length - wordLimit)).join(' ')}</mark>`;
-                let newValue = `${valueArray.join(' ')} ${removedItems} `;
-                this.setState({ value: newValue });
-            } else {
-                this.setState({ value: this.props.value });
-            }
-        }
     }
 
     componentWillReceiveProps(nextProps) {
-        const langWordsPerMinute = langsWordsPerMinute.find((l) => l.code === nextProps.langCode);
-        const wordsPerMinute = langWordsPerMinute ? langWordsPerMinute.limit : defaultWordsPerMinute;
-        const wordLimit = Math.round(wordsPerMinute / 60 * nextProps.duration);
-        this.setState({ wordLimit });
-
         if (this.props.value !== nextProps.value) {
             if ((this.props.currentSlideIndex !== nextProps.currentSlideIndex || this.props.currentSubslideIndex !== nextProps.currentSubslideIndex) && this.props.value !== this.state.value) {
                 this.props.onSave(stripHtml(this.state.value), this.props.currentSlideIndex, this.props.currentSubslideIndex);
             }
-            const valueArray= stripHtml(nextProps.value.trim()).split(' ').filter(v => v);
-            if (valueArray.length > wordLimit) {
-                let removedItems = `<mark>${valueArray.splice(valueArray.length - (valueArray.length - wordLimit)).join(' ')}</mark>`;
-                let newValue = `${valueArray.join(' ')} ${removedItems} `;
-                this.setState({ value: newValue });
-            } else {
-                this.setState({ value: nextProps.value });
-            }
+            this.setState({ value: nextProps.value });
         }
+
+        const langWordsPerMinute = langsWordsPerMinute.find((l) => l.code === nextProps.langCode);
+        const wordsPerMinute = langWordsPerMinute ? langWordsPerMinute.limit : defaultWordsPerMinute;
+        const wordLimit = Math.round(wordsPerMinute / 60 * nextProps.duration);
+        this.setState({ wordLimit });
     }
 
     onValueChange = (value, currentSlideIndex, currentSubslideIndex) => {
-        if (stripHtml(this.state.value) === stripHtml(value.trim())) {
-            this.setState({ value });
-        } else {
-            const valueArray= stripHtml(value.trim()).split(' ').filter(v => v);
-            if (valueArray.length > this.state.wordLimit) {
-                let removedItems = `<mark>${valueArray.splice(valueArray.length - (valueArray.length - this.state.wordLimit)).join(' ')}</mark>`;
-                let newValue = `${valueArray.join(' ')} ${removedItems} `;
-                this.setState({ value: newValue });
-            } else {
-                this.setState({ value });
-            }
+        if (stripHtml(value) !== stripHtml(this.state.value)) {
+            console.log('========================called=======================');
+            this.setState({ value: `<p>some text</p>` });
+            // this.setState({ value: `<p><span style="background-color: rgb(255, 255, 0);">${value}</span></p>` });
         }
-
-        // this.saveValue(value, currentSlideIndex, currentSubslideIndex);
     }
 
     getWordCount = () => {
-        return this.state.value.trim().split(' ').filter(v => v).length;
+        return 5;
+        const count = stripHtml(this.state.value).split(' ').filter(v => v).length;
+        return count;
     }
 
     render() {
         const { loading, title } = this.props;
         const { value } = this.state;
-        console.log(value);
         
         return (
             <Styled styles={styles}>
@@ -118,9 +111,9 @@ class TranslateBox extends React.Component {
                                     basic
                                     className="translate-box__update-button"
                                     loading={loading}
-                                    disabled={loading || stripHtml(value.trim()) === stripHtml(this.props.value.trim()) || !value.trim()}
+                                    // disabled={loading || value.trim() === this.props.value.trim() || !value.trim()}
                                     style={{ backgroundColor: 'transparent', boxShadow: 'none !important', margin: 0, padding: '1rem' }}
-                                    onClick={() => this.props.onSave(stripHtml(value), this.props.currentSlideIndex, this.props.currentSubslideIndex)}
+                                    onClick={() => this.props.onSave(value, this.props.currentSlideIndex, this.props.currentSubslideIndex)}
                                 >
                                     Update
                                 </Button>
@@ -128,7 +121,7 @@ class TranslateBox extends React.Component {
                         </div>
                     </Card.Header>
                     <div
-                        style={{ margin: 0, padding: 0, position: 'relative' }}
+                        style={{ margin: 0, padding: 0, position: 'relative', display: 'flex', flexDirection: 'column' }}
                     >
                         {!this.props.disabled && (
                             <React.Fragment>
@@ -148,7 +141,7 @@ class TranslateBox extends React.Component {
                                 {
                                     (this.state.wordLimit < this.getWordCount()) ?
                                         <div className="translate-box__word-limit" style={{ display: 'flex', alignItems: 'center' }}>
-                                            <div style={{ width: '40px', height: '100%', borderRadius: '10px', display: 'flex', alignItems: 'center', background: 'rgb(249, 157, 37, 0.2)' }}>
+                                            <div style={{ width: `${(this.state.wordLimit - this.state.value.split(' ').filter(v => v).length).toString().length === 2 ? '40px' : '50px'}`, height: '100%', borderRadius: '10px', display: 'flex', alignItems: 'center', background: 'rgb(249, 157, 37, 0.2)' }}>
                                                 <Popup 
                                                     trigger={
                                                         <div style={{ width: '20px', borderRadius: '10px', backgroundColor: '#ffffff', display: 'flex', alignItems: 'center', cursor: 'default' }}>
@@ -170,7 +163,7 @@ class TranslateBox extends React.Component {
                                                     style={{ fontSize: '10px', color: '#666666' }}
                                                 />
                                                 
-                                                <div style={{ fontSize: '12px', color: '#f99d25', marginLeft: '3px' }}>{this.state.wordLimit - this.state.value.trim().split(' ').length}</div>
+                                                <div style={{ fontSize: '12px', color: '#f99d25', marginLeft: '3px' }}>{this.state.wordLimit - this.state.value.split(' ').filter(v => v).length}</div>
                                             </div>
                                             <div style={{ fontSize: '12px', color: '#999999', marginLeft: '8px' }}>
                                                 <span style={{ marginRight: '8px' }}>|</span>
@@ -213,14 +206,75 @@ class TranslateBox extends React.Component {
                             onChange={(e, { value }) => { this.onValueChange(value, this.props.currentSlideIndex, this.props.currentSubslideIndex) }}
                         /> */}
 
-                        <ContentEditable
+                        {/* <ContentEditable
                             style={{ padding: '20px 40px 50px 20px', height: 'auto', width: '100%', border: 'none', cursor: this.props.disabled ? 'not-allowed' : 'text' }}
                             className="editable"
                             tagName="div"
                             html={value}
                             disabled={this.props.disabled}
                             onChange={(e) => { this.onValueChange(e.target.value, this.props.currentSlideIndex, this.props.currentSubslideIndex) }}
+                        /> */}
+
+                        {/* <Editor 
+                            theme={false}
+                            value={value}
+                            placeholder="Translate slide text"
+                            onChange={(html) => { 
+                                console.log('html', html);
+                                console.log('strip', `"${stripHtml(html)}"`);
+                                
+                                
+                                this.onValueChange(html, this.props.currentSlideIndex, this.props.currentSubslideIndex) 
+                            }}
+                        /> */}
+
+                        <TextEditor
+                            toolbarHidden={true}
+                            editorState={this.state.editorState}
+                            onEditorStateChange={(editorState) => {
+                                // const rawContentState = convertToRaw(editorState.getCurrentContent());
+                                // const markup = draftToHtml(rawContentState);
+                                // if (stripHtml(markup) === this.state.markup) {
+                                //     return;
+                                // }
+
+                                this.setState({
+                                    editorState
+                                  }, () => {
+                                    console.log('editorState');
+                                    const rawContentState = convertToRaw(this.state.editorState.getCurrentContent());
+                                    const markup = draftToHtml(rawContentState);
+                                    // console.log(stripHtml(markup), this.state.markup);
+                                    // console.log(stripHtml(markup) === this.state.markup);
+                                    console.log(this.state.markup);
+                                    console.log(markup)
+                                    console.log(stripHtml(markup));
+                                    
+                                    const markupArray = stripHtml(markup).split(' ');
+                                    const colored = markupArray.splice(markupArray.length - 2);
+                                    
+                                    const contentBlock = htmlToDraft(`${markupArray.join(' ')} <span style="color: red">${colored}</span>`);
+                                    if (contentBlock) {
+                                        const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks);
+                                        const editorState = EditorState.createWithContent(contentState);
+                                        this.setState({ editorState, markup: stripHtml(markup) });
+                                    }
+
+                                  });
+                                
+                                // const markupArray = stripHtml(markup).split(' ').filter(v => v);
+                                // const colored = markupArray.splice(markupArray.length - 2);
+                                
+                                // const contentBlock = htmlToDraft(`${markupArray.join(' ')} <span style="color: red">${colored}</span>`);
+                                // if (contentBlock) {
+                                //     const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks);
+                                //     const editorState = EditorState.createWithContent(contentState);
+                                //     this.setState({ editorState, markup: stripHtml(markup) });
+                                // }
+                            }}
                         />
+
+
                         {/* {this._renderSlideTranslateBox()} */}
                     </div>
 
