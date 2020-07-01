@@ -5,11 +5,10 @@ import FindAndReplaceModal from '../../../components/FindAndReplaceModal';
 import { Styled } from 'direflow-component';
 import { CircularProgressBar, buildStyles } from '../../../components/CircularProgressBar';
 import stripHtml from "string-strip-html";
-import { TextEditor } from '../../../components/ReactQuillEditor';
-import { EditorState, convertToRaw, ContentState } from 'draft-js';
-import draftToHtml from 'draftjs-to-html';
-import htmlToDraft from 'html-to-draftjs';
+import { Editor } from '@tinymce/tinymce-react';
 import styles from './style.scss';
+import { off } from 'superagent';
+
 
 const defaultWordsPerMinute = 120;
 const langsWordsPerMinute = [
@@ -32,9 +31,7 @@ class TranslateBox extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            markup: '',
             value: '',
-            editorState: EditorState.createEmpty(),
             wordLimit: 0
         }
         this.saveValue = debounce((value, currentSlideIndex, currentSubslideIndex) => {
@@ -43,52 +40,94 @@ class TranslateBox extends React.Component {
     }
 
     componentDidMount() {
-        const contentBlock = htmlToDraft(this.props.value);
-        console.log('contentBlock', contentBlock);
-        
-        if (contentBlock) {
-            const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks);
-            const editorState = EditorState.createWithContent(contentState);
-            this.setState({ editorState, markup: this.props.value });
-        }
-
-        // this.setState({ value: this.props.value });
-        // if (this.state.value !== this.props.value) {
-        //     this.setState({ value: this.props.value });
-        // }
-
         const langWordsPerMinute = langsWordsPerMinute.find((l) => l.code === this.props.langCode);
         const wordsPerMinute = langWordsPerMinute ? langWordsPerMinute.limit : defaultWordsPerMinute;
         const wordLimit = Math.round(wordsPerMinute / 60 * this.props.duration);
         this.setState({ wordLimit });
+
+        if (this.state.value !== this.props.value) {
+            this.setState({ value: this.props.value });
+        }
     }
 
     componentWillReceiveProps(nextProps) {
+        const langWordsPerMinute = langsWordsPerMinute.find((l) => l.code === nextProps.langCode);
+        const wordsPerMinute = langWordsPerMinute ? langWordsPerMinute.limit : defaultWordsPerMinute;
+        const wordLimit = Math.round(wordsPerMinute / 60 * nextProps.duration);
+        this.setState({ wordLimit });
+
         if (this.props.value !== nextProps.value) {
             if ((this.props.currentSlideIndex !== nextProps.currentSlideIndex || this.props.currentSubslideIndex !== nextProps.currentSubslideIndex) && this.props.value !== this.state.value) {
                 this.props.onSave(stripHtml(this.state.value), this.props.currentSlideIndex, this.props.currentSubslideIndex);
             }
             this.setState({ value: nextProps.value });
         }
-
-        const langWordsPerMinute = langsWordsPerMinute.find((l) => l.code === nextProps.langCode);
-        const wordsPerMinute = langWordsPerMinute ? langWordsPerMinute.limit : defaultWordsPerMinute;
-        const wordLimit = Math.round(wordsPerMinute / 60 * nextProps.duration);
-        this.setState({ wordLimit });
     }
 
-    onValueChange = (value, currentSlideIndex, currentSubslideIndex) => {
-        if (stripHtml(value) !== stripHtml(this.state.value)) {
-            console.log('========================called=======================');
-            this.setState({ value: `<p>some text</p>` });
-            // this.setState({ value: `<p><span style="background-color: rgb(255, 255, 0);">${value}</span></p>` });
-        }
+    onValueChange = (value, editor, currentSlideIndex, currentSubslideIndex) => {
+        console.log(editor);
+        
+        // console.log(editor.selection.getRng().startOffset);
+        // console.log(editor.selection.getRng().endOffset);
+        // console.log(editor.selection.getNode());
+
+        // console.log(value);
+        
+        const node = editor.selection.getNode(); 
+        const offset = editor.selection.getRng().startOffset;
+        console.log(node, offset);
+        
+        editor.selection.setCursorLocation(node, offset);
+        editor.setContent(this.getHighlightedText(editor.getContent({ format: 'text' }), this.state.wordLimit), { format: 'html' });
+
+        // this.setState({ value: editor.getContent({ format: 'text' }) });
+        // editor.setContent(this.getHighlightedText(editor.getContent({ format: 'text' }), this.state.wordLimit), { format: 'html' });
+        
+        // console.log(`"${editor.getContent({ format: 'text' })}"`);
+        // console.log(`"${this.state.value}"`);
+        
+
+        // if (editor.getContent({ format: 'text' }) !== this.state.value) {
+            // this.setState({ value: editor.getContent({ format: 'text' }) });
+            // const bm = editor.selection.getBookmark();
+            // editor.setContent(this.getHighlightedText(editor.getContent({ format: 'text' }), this.state.wordLimit), { format: 'html' });
+            // editor.selection.moveToBookmark(bm);
+        // }
+        
+
+        // if (stripHtml(value) !== stripHtml(this.state.value)) {
+        //     this.setState({ value }, () => {
+        //         const bm = editor.selection.getBookmark();
+        //         editor.setContent(editor.getContent() + 'Some new content');
+        //         editor.selection.moveToBookmark(bm);
+        //     });
+            
+
+        //     // console.log(bm);
+        //     // editor.selection.moveToBookmark(bm);
+        
+        //     // // console.log(x);
+            
+        //     // this.setState({ value: this.getHighlightedText(value, this.state.wordLimit) }, () => {
+        //     //     editor.selection.moveToBookmark(bm);
+        //     //     // editor.selection.setCursorLocation(editor.selection.getNode(), editor.selection.getRng().startOffset);
+        //     //     // editor.selection.setCursorLocation(node, offset);
+        //     // });
+        // }
     }
 
     getWordCount = () => {
-        return 5;
         const count = stripHtml(this.state.value).split(' ').filter(v => v).length;
         return count;
+    }
+
+    getHighlightedText = (value, wordLimit) => {
+        const valueArray = value.split(' ').filter(v => v);
+        if (valueArray.length <= wordLimit) {
+            return value;
+        }
+        const highlightedTextArray = valueArray.splice(wordLimit);
+        return `${valueArray.join(' ')} <span style="background: rgba(249, 157, 37, 0.2);">${highlightedTextArray.join(' ')}</span>`;
     }
 
     render() {
@@ -228,50 +267,55 @@ class TranslateBox extends React.Component {
                             }}
                         /> */}
 
-                        <TextEditor
+                        {/* <TextEditor
                             toolbarHidden={true}
                             editorState={this.state.editorState}
                             onEditorStateChange={(editorState) => {
-                                // const rawContentState = convertToRaw(editorState.getCurrentContent());
-                                // const markup = draftToHtml(rawContentState);
-                                // if (stripHtml(markup) === this.state.markup) {
-                                //     return;
-                                // }
-
-                                this.setState({
-                                    editorState
-                                  }, () => {
-                                    console.log('editorState');
-                                    const rawContentState = convertToRaw(this.state.editorState.getCurrentContent());
-                                    const markup = draftToHtml(rawContentState);
-                                    // console.log(stripHtml(markup), this.state.markup);
-                                    // console.log(stripHtml(markup) === this.state.markup);
-                                    console.log(this.state.markup);
-                                    console.log(markup)
-                                    console.log(stripHtml(markup));
-                                    
-                                    const markupArray = stripHtml(markup).split(' ');
-                                    const colored = markupArray.splice(markupArray.length - 2);
-                                    
-                                    const contentBlock = htmlToDraft(`${markupArray.join(' ')} <span style="color: red">${colored}</span>`);
-                                    if (contentBlock) {
-                                        const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks);
-                                        const editorState = EditorState.createWithContent(contentState);
-                                        this.setState({ editorState, markup: stripHtml(markup) });
-                                    }
-
-                                  });
+                                    // const rawContentState = convertToRaw(this.state.editorState.getCurrentContent());
+                                    // const markup = draftToHtml(rawContentState);
+                                    // if (stripHtml(markup) === this.state.markup) {
+                                    //     return;
+                                    // }
                                 
-                                // const markupArray = stripHtml(markup).split(' ').filter(v => v);
-                                // const colored = markupArray.splice(markupArray.length - 2);
-                                
-                                // const contentBlock = htmlToDraft(`${markupArray.join(' ')} <span style="color: red">${colored}</span>`);
-                                // if (contentBlock) {
-                                //     const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks);
-                                //     const editorState = EditorState.createWithContent(contentState);
-                                //     this.setState({ editorState, markup: stripHtml(markup) });
-                                // }
+                                    // this.setState({ editorState: x }, () => {
+
+                                        // const markupArray = stripHtml(markup).split(' ');
+                                        // const colored = markupArray.splice(markupArray.length - 1);
+                                        // const contentBlock = htmlToDraft(`${markupArray.join(' ')} <span style="color: red">${colored.join(' ')}</span>`);
+                                        // if (contentBlock) {
+                                        //     const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks);
+                                        //     const editorState = EditorState.createWithContent(contentState);
+                                        //     this.setState({ editorState: editorState, markup: stripHtml(markup) }, () => {
+                                        //         this.setState({ editorState: x });
+                                        //     });
+                                        // }
+                                    // });
                             }}
+                        /> */}
+
+                        <Editor
+                            initialValue={this.state.value}
+                            // value={this.state.value}
+                            disabled={this.props.disabled}
+                            init={{
+                                menubar: false,
+                                plugins: "autoresize",
+                                toolbar: false,
+                                resize: false,
+                                branding: false,
+                                statusbar: false,
+                                placeholder: "Translate slide text",
+                                // setup: function (ed) {
+                                //     ed.on('NodeChange', function(e) {
+                                //         console.log('changed');
+                                //         ed.selection.setCursorLocation(ed.selection.getNode(), ed.selection.getRng().startOffset);
+                                        
+                                //     });
+                                // }
+                              }}
+                              onEditorChange={(value, editor) => {
+                                this.onValueChange(value, editor, this.props.currentSlideIndex, this.props.currentSubslideIndex);
+                              }}
                         />
 
 

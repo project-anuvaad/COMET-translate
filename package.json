@@ -9,6 +9,7 @@
     "test": "react-app-rewired test --env=jest-environment-jsdom-fourteen"
   },
   "dependencies": {
+    "@tinymce/tinymce-react": "^3.6.0",
     "abortcontroller-polyfill": "^1.4.0",
     "direflow-component": "3.2.8",
     "draft-js": "^0.11.6",
