@@ -15,6 +15,11 @@
             margin-right: 0;;
         }
     }
+    &__word-limit {
+        position: absolute;
+        right: 2%;
+        bottom: 5%;
+    }
     .text-translator-only {
         visibility: hidden;
     }
@@ -22,5 +27,8 @@
         .text-translator-only {
             visibility: visible;
         }
+    }
+    textarea:focus {
+        outline: none;
     }
 }
