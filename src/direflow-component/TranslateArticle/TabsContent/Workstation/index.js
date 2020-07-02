@@ -90,6 +90,7 @@ class Workstation extends React.Component {
         highlightMaxTime: false,
         duration: 0,
         currentTime: 0,
+        recordedAudioRefDuration: 0,
     }
 
     componentWillMount() {
@@ -1035,12 +1036,20 @@ class Workstation extends React.Component {
                                                 <audio
                                                     key={`audio-player-${subslide.tmpAudio || subslide.audio}`}
                                                     controls
+                                                    ref={ref => {
+                                                        this.recordedAudioRef = ref;
+                                                    }}
                                                     onPlay={this.onPlay}
                                                     onPause={this.onPause}
                                                     onEnded={this.onEnded}
+                                                    onLoadedData={(e) => {
+                                                        if (this.recordedAudioRef) {
+                                                            this.setState({ recordedAudioRefDuration: this.recordedAudioRef.duration });
+                                                        }
+                                                    }}
                                                 >
                                                     <source src={subslide.tmpAudio || subslide.audio} />
-                                            Your browser does not support the audio element.
+                                                    Your browser does not support the audio element.
                                             </audio>
 
                                                 {canModify && subslide && !subslide.tmpAudio && !this.isCurrentSlideLoading() && (
@@ -1120,10 +1129,19 @@ class Workstation extends React.Component {
                                 </React.Fragment>
                             )}
 
-
                             {!translatableArticle.tts && (
-                                <div>
-                                    <small style={{ backgroundColor: this.state.highlightMaxTime ? 'yellow' : 'transparent', padding: '0.2rem' }} >Maximum audio limit: {parseInt(translatableArticle.slides[currentSlideIndex].content[currentSubslideIndex].media[0].duration)} seconds</small>
+                                <div style={{ height: 25 }}>
+                                    {this.state.recordedAudioRefDuration && this.recordedAudioRef && translatableArticle.slides[currentSlideIndex].content[currentSubslideIndex].media[0].duration - this.state.recordedAudioRefDuration > 1 ? (
+                                            <small style={{ backgroundColor: this.state.highlightMaxTime ? 'yellow' : 'transparent', padding: '0.2rem', display: 'flex', alignItems: 'center' }} >
+                                                <Icon name="warning circle" style={{ color: "#f99d25" }} size="large" /> The ideal record time for this slide should be {parseInt(translatableArticle.slides[currentSlideIndex].content[currentSubslideIndex].media[0].duration - 1)} or {parseInt(translatableArticle.slides[currentSlideIndex].content[currentSubslideIndex].media[0].duration)} seconds
+                                            </small> 
+                                    )
+                                       :(
+
+                                            <small style={{ backgroundColor: this.state.highlightMaxTime ? 'yellow' : 'transparent', padding: '0.2rem' }} >
+                                                Maximum audio limit: {parseInt(translatableArticle.slides[currentSlideIndex].content[currentSubslideIndex].media[0].duration)} seconds
+                                                </small>
+                                        )}
                                 </div>
                             )}
                         </Grid.Column>
