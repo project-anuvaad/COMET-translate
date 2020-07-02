@@ -1592,7 +1592,10 @@ class Workstation extends React.Component {
                                                             <SlidesList
                                                                 currentSlideIndex={currentSlideIndex}
                                                                 currentSubslideIndex={currentSubslideIndex}
+                                                                voiceIsValid={translatableArticle.slides[currentSlideIndex].content[currentSubslideIndex].media[0].duration - this.state.recordedAudioRefDuration <= 1}
+                                                                langCode={translatableArticle.langCode}
                                                                 speakerTranslatorsMap={speakerTranslatorsMap}
+                                                                textTranslator={translatableArticle.textTranslators && translatableArticle.textTranslators.length > 0 && this.props.users[translatableArticle.textTranslators[0].user] ? this.props.users[translatableArticle.textTranslators[0].user] : null }
                                                                 slides={translatableArticle.slides}
                                                                 onSubslideClick={this.onSlideChange}
                                                                 onChatClick={this.onChatClick}
