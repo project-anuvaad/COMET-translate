@@ -865,9 +865,12 @@ export const addTTSTranslation = (slidePosition, subslidePosition) => (dispatch,
   requestAgent.post(Api.translate.addTTSTranslation(translatableArticle._id), { slidePosition, subslidePosition })
   .then((res) => {
       const { translatableArticle, originalTranslatableArticle } = getState()[moduleName]
+    
+      const { slidePosition, subslidePosition, ...rest } = res.body;
+      Object.keys(rest).forEach(key => {
+        translatableArticle.slides[slideIndex].content[subslideIndex][key] = rest[key];
+      })
 
-      translatableArticle.slides[slideIndex].content[subslideIndex].audio = res.body.audio;
-      translatableArticle.slides[slideIndex].content[subslideIndex].audioSynced = res.body.audioSynced;
       translatableArticle.slides[slideIndex].content[subslideIndex].audioSource = 'tts';
       const updates = {
           translatableArticle: _.cloneDeep(translatableArticle),
@@ -876,7 +879,7 @@ export const addTTSTranslation = (slidePosition, subslidePosition) => (dispatch,
           recordUploadLoading: false,
 
       }
-      const updatedOriginalTranslatableArticle = getUpdatedOrignalTranslatableArticle(originalTranslatableArticle, slidePosition, subslidePosition, { audio: res.body.audio });
+      const updatedOriginalTranslatableArticle = getUpdatedOrignalTranslatableArticle(originalTranslatableArticle, slidePosition, subslidePosition, rest);
       if (updatedOriginalTranslatableArticle) {
           updates.originalTranslatableArticle = updatedOriginalTranslatableArticle;
       }
@@ -1019,12 +1022,14 @@ export const saveRecordedTranslation = (slidePosition, subslidePosition, blob) =
     .field('file', blob)
     .then((res) => {
         const { translatableArticle, originalTranslatableArticle } = getState()[moduleName]
+        const { slidePosition, subslidePosition, ...rest } = res.body;
+        Object.keys(rest).forEach(key => {
+            translatableArticle.slides[slideIndex].content[subslideIndex][key] = rest[key];
+        })
 
-        translatableArticle.slides[slideIndex].content[subslideIndex].audio = res.body.audio;
         translatableArticle.slides[slideIndex].content[subslideIndex].oldAudio = null;
         translatableArticle.slides[slideIndex].content[subslideIndex].recordedBlob = null;
         translatableArticle.slides[slideIndex].content[subslideIndex].tmpAudio = '';
-        translatableArticle.slides[slideIndex].content[subslideIndex].audioSource = 'user';
 
         const updates = {
             translatableArticle: _.cloneDeep(translatableArticle),
@@ -1090,8 +1095,11 @@ export const deleteRecordedTranslation = (slidePosition, subslidePosition) => (d
     requestAgent.delete(Api.translate.deleteRecordedTranslation(translatableArticle._id), { slidePosition, subslidePosition })
     .then((res) => {
         const { translatableArticle, originalTranslatableArticle } = getState()[moduleName]
-        translatableArticle.slides[slideIndex].content[subslideIndex].audio = res.body.audio || '';
-        translatableArticle.slides[slideIndex].content[subslideIndex].audioSynced = res.body.audioSynced || false;
+        const { slidePosition, subslidePosition, ...rest} = res.body;
+        Object.keys(rest).forEach(key => {
+            translatableArticle.slides[slideIndex].content[subslideIndex][key] = rest[key];
+        })
+
         const updates = {
             translatableArticle: _.cloneDeep(translatableArticle),
         }
