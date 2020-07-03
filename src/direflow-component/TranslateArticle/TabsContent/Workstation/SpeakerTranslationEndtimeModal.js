@@ -1,8 +1,6 @@
 import React from 'react';
 import { Modal, Button, Input, Icon } from 'semantic-ui-react';
-import DatePicker from "react-datepicker";
-
-import "react-datepicker/dist/react-datepicker.css";
+import DatePicker from '../../components/DatePicker';
 
 export default class SpeakerTranslationEndtimeModal extends React.Component {
     state = {
@@ -33,14 +31,14 @@ export default class SpeakerTranslationEndtimeModal extends React.Component {
         return (
             <Modal open={this.props.open} size="tiny">
                 <Modal.Content>
-                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ textAlign: 'center' }}>
                         <p>
                             This video will be completed by:
                         </p>
-                        <div style={{ margin: 10 }}>
+                        <div style={{ margin: 10, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                             <DatePicker
                                 // inline
-                                ref={ref => this.datepickerRef = ref}
+                                datepickerRef={ref => this.datepickerRef = ref}
                                 customInput={<Input ref={ref => this.inputRef = ref} />}
                                 selected={this.state.date || new Date()}
                                 onChange={this.handleChange} //only when value has changed
