@@ -67,6 +67,7 @@ class ExportHistory extends React.Component {
             voiceVolume: selectedTranslationExport.voiceVolume,
             backgroundMusicVolume: selectedTranslationExport.backgroundMusicVolume,
             normalizeAudio: selectedTranslationExport.normalizeAudio,
+            cancelNoise: selectedTranslationExport.cancelNoise,
         };
         this.props.updateTranslationExportAudioSettings(selectedTranslationExport._id, changes);
     }
@@ -104,6 +105,21 @@ class ExportHistory extends React.Component {
 
                     <Modal.Content>
                         <Grid style={{ margin: 0 }}>
+                            <Grid.Row style={{ borderBottom: '1px solid #eee' }}>
+                                <Grid.Column width={8}>
+                                   ML Background Noise Cancellation 
+                                </Grid.Column>
+                                <Grid.Column width={8} style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                    <Checkbox
+                                        toggle
+                                        onChange={(e, { checked }) => {
+                                            this.setState({ selectedTranslationExport: { ...selectedTranslationExport, cancelNoise: checked } });
+                                        }}
+                                        size="huge"
+                                        checked={selectedTranslationExport.cancelNoise}
+                                    />
+                                </Grid.Column>
+                            </Grid.Row>
                             <Grid.Row style={{ borderBottom: '1px solid #eee' }}>
                                 <Grid.Column width={8}>
                                     Audio Mastering

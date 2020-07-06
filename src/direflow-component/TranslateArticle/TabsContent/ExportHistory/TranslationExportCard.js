@@ -233,7 +233,7 @@ export default class TranslationExportCard extends React.Component {
                                         <Popup
                                             content={(
                                                 <div>
-                                                    {renderLabel('ML Background Noise Cancellation')}
+                                                    {translationExport.cancelNoise && renderLabel('ML Background Noise Cancellation')}
                                                     {translationExport.normalizeAudio && renderLabel('Audio Mastering')}
                                                     {renderLabel(`Vocal Level: ${translationExport.voiceVolume}x`)}
                                                     {translationExport.backgroundMusicTransposed && renderLabel(`ML Background Music Transpose`)}
