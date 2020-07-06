@@ -53,3 +53,12 @@
       }
     }
   }
+
+  .ui.basic.button.clear-button,.ui.basic.button.clear-button:focus, .ui.basic.buttons .button.clear-button:focus {
+    border: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+    font-size: 14px;
+    font-weight: bold !important;
+    color: rgba(0,0,0,0.8) !important;
+  }
