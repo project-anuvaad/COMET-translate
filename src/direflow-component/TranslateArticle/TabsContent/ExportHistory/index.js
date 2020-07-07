@@ -25,6 +25,7 @@ class ExportHistory extends React.Component {
         this.props.fetchSignLangArticles(this.props.translatableArticle.originalArticle);
         this.props.startJob({ jobName: FETCH_TRANSLATIONEXPORTS, interval: 10000 }, () => {
             this.props.fetchTranslationExports(this.props.exportHistoryCurrentPageNumber, false);
+            this.props.fetchArticleVideo(this.props.translatableArticle.video);
         })
     }
 
@@ -282,6 +283,10 @@ class ExportHistory extends React.Component {
                                     <Grid.Column width={4} key={translationExport._id}>
                                         <TranslationExportCard
                                             title={this.props.translatableArticle.title}
+                                            users={this.props.users}
+                                            textTranslators={this.props.translatableArticle ? this.props.translatableArticle.textTranslators : []}
+                                            translators={this.props.translatableArticle ? this.props.translatableArticle.translators : []}
+                                            verifiers={this.props.translatableArticle ? this.props.translatableArticle.verifiers : []}
                                             thumbnail={this.props.video ? this.props.video.thumbnailUrl : ''}
                                             lang={this.props.translatableArticle.langCode || this.props.translatableArticle.langName}
                                             translationExport={{...translationExport }}
@@ -320,6 +325,7 @@ const mapStateToProps = ({ translateArticle }) => ({
     translatableArticle: translateArticle.translatableArticle,
     video: translateArticle.video,
     signLanguageArticles: translateArticle.signLanguageArticles,
+    users: translateArticle.users,
 })
 
 const mapDispatchToProps = (dispatch) => ({
