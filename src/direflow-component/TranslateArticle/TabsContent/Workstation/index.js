@@ -904,6 +904,7 @@ class Workstation extends React.Component {
                         <Grid.Column computer={16} mobile={16}>
                             {translatableArticle.slides[currentSlideIndex] && (
                                 <TranslateBox
+                                    showPause={translatableArticle.tts}
                                     title={(
                                         <span>
                                             {slideTitle}
