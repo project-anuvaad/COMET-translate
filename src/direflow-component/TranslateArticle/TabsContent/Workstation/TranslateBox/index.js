@@ -45,6 +45,7 @@ function PauseIcon(props) {
         display: "inline-block",
         // width: 20,
         // height: 20,
+        cursor: 'pointer',
         color: "white",
         textAlign: "center",
         borderRadius: "20rem",
