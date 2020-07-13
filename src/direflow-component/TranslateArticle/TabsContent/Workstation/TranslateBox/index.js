@@ -396,20 +396,23 @@ class TranslateBox extends React.Component {
               ) : (
                 <div
                   style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    overflowY: 'scroll',
                     padding: 20,
-                    overflowWrap: "break-word",
                     paddingRight: 40,
                     marginBottom: 40,
-                    maxHeight: 100,
+                    maxHeight: 200,
                     width: "100%",
                     border: "none",
                     resize: "none",
                     cursor: this.props.disabled ? "not-allowed" : "text",
-                    height: 150,
+                    height: 100,
                   }}
                   ref={(ref) => (this.editableRef = ref)}
                 >
-                  {this.state.value.split(" ").map((w, i) => (
+                  {/* Add empty part at the end to support adding pause at the end of the text */}
+                  {this.state.value.split(" ").concat(['']).map((w, i) => (
                     <span
                       onDragEnter={(e) => {
                         e.preventDefault();
@@ -432,7 +435,7 @@ class TranslateBox extends React.Component {
                       }}
                       key={w + i}
                     >
-                      {w}&nbsp;
+                      {w ? <span>{w}&nbsp;</span> : <span style={{ display: 'inline-block', width: 50 }}>&nbsp;&nbsp;&nbsp;&nbsp;</span>}
                     </span>
                   ))}
                 </div>

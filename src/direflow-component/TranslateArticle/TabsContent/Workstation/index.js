@@ -1005,12 +1005,22 @@ class Workstation extends React.Component {
                                                                             help="Sync Audio"
                                                                             circular
                                                                             style={{ marginRight: 10 }}
-                                                                            loading={this.isCurrentSlideLoading()}
-                                                                            disabled={this.isCurrentSlideLoading() || (subslide && subslide.audioSynced)}
+                                                                            loading={this.props.syncAllLoading || this.isCurrentSlideLoading()}
+                                                                            disabled={this.props.syncAllLoading || this.isCurrentSlideLoading() || (subslide && subslide.audioSynced)}
                                                                             onClick={() => this.onGenerateTTSAudio()}
                                                                         />
                                                                     }
                                                                 />
+                                                                {canSyncAll && (
+                                                                    <Button
+                                                                        primary
+                                                                        circular
+                                                                        loading={this.props.syncAllLoading || this.isCurrentSlideLoading()}
+                                                                        disabled={this.props.syncAllLoading || this.isCurrentSlideLoading()}
+                                                                        onClick={() => this.onSyncAll('tts')}
+                                                                        content="Sync all"
+                                                                    />
+                                                                )}
                                                             </React.Fragment>
                                                         )}
                                                         {!translatableArticle.tts && (
@@ -1085,16 +1095,6 @@ class Workstation extends React.Component {
                                         )}
 
                                     </div>
-                                    {translatableArticle.tts && canSyncAll && (
-                                        <Button
-                                            primary
-                                            circular
-                                            loading={this.props.syncAllLoading}
-                                            disabled={this.props.syncAllLoading}
-                                            onClick={() => this.onSyncAll('tts')}
-                                            content="Sync all"
-                                        />
-                                    )}
                                     {translatableArticle && (
                                         <div>
                                             <EditAudioSpeedModal
