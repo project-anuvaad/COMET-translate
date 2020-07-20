@@ -64,7 +64,7 @@ class TranslateBox extends React.Component {
     super(props);
     this.state = {
       value: "",
-      pause: 1,
+      pause: 2,
       wordLimit: 0,
     };
     this.saveValue = debounce(
