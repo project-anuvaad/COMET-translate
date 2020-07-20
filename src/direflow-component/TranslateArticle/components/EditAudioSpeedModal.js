@@ -59,9 +59,9 @@ export default class EditAudioSpeedModal extends React.Component {
                                     type='number'
                                     min={10}
                                     max={200}
-                                    step={10}
+                                    step={5}
                                     fluid
-                                    value={this.state.value * 100}
+                                    value={parseInt(this.state.value * 100)}
                                     onChange={(e) => this.setState({ value: e.target.value / 100 })}
                                     label="%"
                                     labelPosition="right"

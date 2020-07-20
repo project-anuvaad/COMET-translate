@@ -1171,7 +1171,7 @@ class Workstation extends React.Component {
                                         )}
 
                                     </div>
-                                    {translatableArticle && (
+                                    {translatableArticle && subslide && subslide.audio && (
                                         <div>
                                             <EditAudioSpeedModal
                                                 value={this.props.currentSubslide && this.props.currentSubslide.audioSpeed ? this.props.currentSubslide.audioSpeed : 1}
