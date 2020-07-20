@@ -7,6 +7,7 @@ import RecordRTC from 'recordrtc';
 
 import { Styled } from 'direflow-component';
 import styles from './style.scss';
+const REMAINING_MS_THREASHOLD = 300;
 
 // shim for AudioContext when it's not avb.
 window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
@@ -110,13 +111,13 @@ class AudioRecorder extends React.Component {
               let remainingMS = null;
               if (this.state.recording && this.props.maxDuration && this.state.startTime) {
                 remainingMS = getRemainingMS(this.state.startTime, this.props.maxDuration);
-                if (remainingMS <= 200) {
+                if (remainingMS <= REMAINING_MS_THREASHOLD) {
                   this.stopRecording();
                 }
               }
               // this.setState({ remainingMS });
-              // Update remaining time if only 1 second passed or remaining ms is  <= 200
-              if (!this.state.remainingMS || (this.state.remainingMS - remainingMS) > 1000 || remainingMS <= 200) {
+              // Update remaining time if only 1 second passed or remaining ms is  <= REMAINING_MS_THREASHOLD 
+              if (!this.state.remainingMS || (this.state.remainingMS - remainingMS) > 1000 || remainingMS <= REMAINING_MS_THREASHOLD) {
                 this.setState({ remainingMS });
               }
             }

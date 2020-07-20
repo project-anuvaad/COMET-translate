@@ -7,7 +7,7 @@ import { Grid, Card, Button, Icon, Input, Progress, Select, Popup, Sidebar, Chec
 import moment from 'moment';
 import ReactAvatar from 'react-avatar';
 import Dropzone from 'react-dropzone';
-
+import Switch from 'react-switch'
 
 
 // COMPONENTS
@@ -42,7 +42,8 @@ import {
     getSpeakersTranslatorsMap,
     displayArticleLanguage,
     canUserAccess,
-    getUserName
+    getUserName,
+    formatSubslideToSubtitle
 } from '../../utils/helpers';
 
 import styles from './style.scss'
@@ -56,6 +57,7 @@ import TextTranslationApprovalTutorialModal from '../../components/TextTranslati
 import VoiceOverTranslationTutorialModal from '../../components/VoiceOverTranslationTutorialModal';
 import VoiceOverTranslationApprovalTutorialModal from '../../components/VoiceOverTranslationApprovalTutorialModal';
 import StagesProcess from '../../components/StagesProcess/index';
+import VideoTimelineV2 from '../../components/VideoTimeline/v2';
 
 const FETCH_ARTICLE_JOBNAME = 'FETCH_TRANSLATE_ARTICLE';
 
@@ -98,6 +100,7 @@ class Workstation extends React.Component {
         duration: 0,
         currentTime: 0,
         recordedAudioRefDuration: 0,
+        showTimeline: true,
     }
 
     componentWillMount() {
@@ -916,6 +919,39 @@ class Workstation extends React.Component {
         )
     }
 
+    renderTimeline = () => {
+
+        const { listIndex, subslides } = this.props;
+        const elapsedTime = listIndex === 0 ? 0 : subslides[listIndex - 1].endTime * 1000; 
+        console.log(this.state.currentTime, 'current time')
+        return <VideoTimelineV2
+            currentTime={ elapsedTime + this.state.currentTime}
+            onTimeChange={(time) => {
+                //  this.onTimeChange(elapsedTime);
+                 const timeInSeconds = time / 1000;
+                 const currentSubslide = this.props.subslides.find(s => s.startTime < timeInSeconds && s.endTime > timeInSeconds);
+                 if (currentSubslide) {
+                     this.onSlideChange(currentSubslide.slideIndex, currentSubslide.subslideIndex)
+                    this.onTimeChange((timeInSeconds - currentSubslide.startTime) * 1000)
+                 } else {
+                    // this.onTimeChange()
+                 }
+            }}
+            duration={this.props.video.duration * 1000}
+            // subtitles={this.props.subslides.map(s => ({ ...s, startTime: s.startTime * 1000, endTime: s.endTime * 1000, speakerNumber: s.speakerProfile.speakerNumber, backgroundColor: 'blue' }))}
+            subtitles={this.props.subslides.map(formatSubslideToSubtitle)}
+            selectedSubtitleIndex={
+            this.props.listIndex
+            }
+            disableEditing={true}
+            // onSubtitleChange={this.onSaveSubtitle}
+            // onAddSubtitle={this.onAddSubtitle}
+            onSubtitleSelect={(subtitle, index) =>{
+                this.onSlideChange(subtitle.slideIndex, subtitle.subslideIndex)
+            }}
+        />
+    }
+
     renderTextForm = () => {
 
         const {
@@ -1363,6 +1399,7 @@ class Workstation extends React.Component {
                                                                 <ProofreadingVideoPlayerV2
                                                                     inverted
                                                                     width={'100%'}
+                                                                    height={600}
                                                                     muted={this.props.editorMuted}
                                                                     duration={this.state.duration}
                                                                     currentTime={this.state.currentTime}
@@ -1460,6 +1497,33 @@ class Workstation extends React.Component {
                                                         </div>
                                                     </Grid.Column>
                                                 </Grid.Row>
+                                                    <Grid.Row>
+                                                        <Grid.Column width={16}>
+                                                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10  }}>
+                                                                <Switch
+                                                                    onColor="#86d3ff"
+                                                                    onHandleColor="#2693e6"
+                                                                    handleDiameter={30}
+                                                                    uncheckedIcon={false}
+                                                                    checkedIcon={false}
+                                                                    boxShadow="0px 1px 5px rgba(0, 0, 0, 0.6)"
+                                                                    activeBoxShadow="0px 0px 1px 10px rgba(0, 0, 0, 0.2)"
+                                                                    height={20}
+                                                                    width={48}
+                                                                    checked={this.state.showTimeline}
+                                                                    onChange={(checked) =>
+                                                                    this.setState({ showTimeline: checked })
+                                                                    }
+                                                                />{" "}
+                                                                &nbsp; &nbsp; Show Timeline
+                                                            </div>
+                                                        {this.state.showTimeline && this.props.subslides && this.props.video && this.props.video.duration && (
+                                                                <div style={{ overflowX: 'hidden', height: 100 }}>
+                                                                {this.renderTimeline()}
+                                                            </div>
+                                                        )}
+                                                        </Grid.Column>
+                                                    </Grid.Row>
                                                 <Grid.Row>
                                                     <Grid.Column width={16}>
                                                         <CommentsSidebar />

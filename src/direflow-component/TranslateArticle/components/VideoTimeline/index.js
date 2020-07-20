@@ -133,7 +133,6 @@ class VideoTimeline extends React.Component {
         }
         if (nextProps.subtitles !== this.props.subtitles) {
             let newSubtitles = nextProps.subtitles || [];
-            console.log('====================== update subtitles =================== ')
             this.setState({ subtitles: newSubtitles.map((s) => ({ ...s })) });
         }
     }

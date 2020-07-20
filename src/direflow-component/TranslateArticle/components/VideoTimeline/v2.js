@@ -108,7 +108,11 @@ class VideoTimelineV2 extends React.Component {
         drawCanvas(this.canvasRef, 6000, 40, duration || 0, 0, 60000)
         const barHalfSize = this.canvasRef.parentElement.offsetWidth / 2;
         const newLeft = this.state.barHalfSize - durationToPixels(this.props.currentTime, SCALE);
-        this.setState({ barHalfSize, subtitles: subtitles.map((s) => ({ ...s })), left: newLeft, lastLeft: newLeft });
+        this.setState({ barHalfSize, subtitles: subtitles.map((s) => ({ ...s })), left: newLeft, lastLeft: newLeft }, () => {
+            if (this.props.currentTime !== 0) {
+                this.handleCurrentTimeChange(this.props.currentTime, this.props.duration)
+            }
+        });
         window.onresize = () => {
             setTimeout(() => {
                 this.setState(({ barHalfSize, left }) => {
@@ -136,7 +140,6 @@ class VideoTimelineV2 extends React.Component {
         }
         if (nextProps.subtitles !== this.props.subtitles) {
             let newSubtitles = nextProps.subtitles || [];
-            console.log('====================== update subtitles =================== ')
             this.setState({ subtitles: newSubtitles.map((s) => ({ ...s })) });
         }
     }
@@ -166,6 +169,11 @@ class VideoTimelineV2 extends React.Component {
 
                 drawCanvas(this.canvasRef, 6000, 40, duration, startTime, endTime);
                 return { deltas: newDeltas, deltaMS, currentTime };
+            }, () => {
+                // console.log('trick trick')
+                // DONT ASK ABOUT THIS, IT JUST WORKS!!
+                // Wasted Time: 2 hours
+                this.handleCurrentTimeChange(currentTime + 10, duration)
             })
         } else {
             this.setState({ currentTime });
@@ -377,6 +385,7 @@ class VideoTimelineV2 extends React.Component {
         const TOP = 40;
         const HEGIHT = '100%';
         const MINHEIGHT = 30;
+        const draggable = !this.props.disableEditing;
         // const left = this.state.barHalfSize - durationToPixels(this.state.currentTime - this.state.deltaMS, SCALE);
         // Render only the current viewed subtitles
         return this.state.subtitles.map((slide, index) =>
@@ -428,7 +437,7 @@ class VideoTimelineV2 extends React.Component {
                                         width: '100%',
                                         minHeight: MINHEIGHT,
                                     }}
-                                    draggable
+                                    draggable={draggable}
                                     onDragStart={this.onDragStart}
                                     onDragCapture={(e) => this.onSlideDrag(e, index)}
                                     onDragEnd={() => this.onSlideDragEnd(index)}
@@ -456,7 +465,7 @@ class VideoTimelineV2 extends React.Component {
                                         style={{
                                             background: '#A2A3A4',
                                             position: 'absolute',
-                                            cursor: 'col-resize',
+                                            cursor: draggable ? 'col-resize' : 'normal',
                                             height: '100%',
                                             width: 15,
                                             display: 'flex',
@@ -464,7 +473,7 @@ class VideoTimelineV2 extends React.Component {
                                             justifyContent: 'center',
 
                                         }}
-                                        draggable={true}
+                                        draggable={draggable}
                                         onDragStart={this.onDragStart}
                                         onDragCapture={(e) => this.onIncreaseStartTime(e, index)}
                                         onDragEnd={() => this.onIncreaseStartTimeEnd(index)}
@@ -489,14 +498,14 @@ class VideoTimelineV2 extends React.Component {
                                         style={{
                                             background: '#A2A3A4',
                                             position: 'absolute',
-                                            cursor: 'col-resize',
+                                            cursor: draggable ? 'col-resize' : 'normal',
                                             height: '100%',
                                             width: 15,
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                         }}
-                                        draggable={true}
+                                        draggable={draggable}
                                         onDragStart={this.onDragStart}
                                         onDragCapture={(e) => this.onIncreaseEndTime(e, index)}
                                         onDragEnd={() => this.onIncreaseEndTimeEnd(index)}
@@ -508,50 +517,6 @@ class VideoTimelineV2 extends React.Component {
                             </React.Fragment>
                         )}
                     </div>
-                    {/* <div
-                        // key={slide.text + 'left-handler'}
-                        style={{
-                            position: 'absolute',
-                            top: TOP,
-                            height: HEGIHT,
-                            width: 10,
-                            left: durationToPixels(slide.startTime - this.state.deltaMS, SCALE),
-                            zIndex: 5,
-                        }}
-                    >
-                        <span
-                            href="javascript:void(0)"
-                            style={{ background: '#A2A3A4', position: 'absolute', cursor: 'col-resize', height: '100%', width: 10 }}
-                            draggable={true}
-                            onDragStart={this.onDragStart}
-                            onDragCapture={(e) => this.onIncreaseStartTime(e, index)}
-                            onDragEnd={() => this.onIncreaseStartTimeEnd(index)}
-                        >
-                            {'<'}
-                        </span>
-                    </div> */}
-                    {/* <div
-                        // key={slide.text + 'right-handler'}
-                        style={{
-                            position: 'absolute',
-                            top: TOP,
-                            height: HEGIHT,
-                            width: 10,
-                            left: durationToPixels(slide.startTime - this.state.deltaMS, SCALE) + durationToPixels(slide.endTime - slide.startTime, SCALE) - 10,
-                            zIndex: 5,
-                        }}
-                    >
-                        <span
-                            href="javascript:void(0)"
-                            style={{ background: '#A2A3A4', position: 'absolute', cursor: 'col-resize', height: '100%', width: 10 }}
-                            draggable={true}
-                            onDragStart={this.onDragStart}
-                            onDragCapture={(e) => this.onIncreaseEndTime(e, index)}
-                            onDragEnd={() => this.onIncreaseEndTimeEnd(index)}
-                        >
-                            {'>'}
-                        </span>
-                    </div> */}
                 </React.Fragment>
             ) : null)
     }

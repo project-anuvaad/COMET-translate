@@ -448,7 +448,7 @@ export default class TranslationExportCard extends React.Component {
                 </div>
               </div>
             </div>
-            <div style={{ marginLeft: "1rem", color: '#999999' }}>
+            <div style={{ marginLeft: "1rem", marginBottom: '1rem', color: '#999999' }}>
               <div style={{ marginBottom: 10 }}>Contributors:</div>
                 <div
                   style={{

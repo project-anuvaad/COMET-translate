@@ -421,6 +421,7 @@ export const onPreviewChange = preview => (dispatch, getState) => {
     dispatch(setPreview(preview));
     dispatch(setCurrentSlideIndex(0));
     dispatch(setCurrentSubslideIndex(0));
+    dispatch(setListIndex(0))
 
     const { translatableArticle, originalViewedArticle, tmpViewedArticle } = getState()[moduleName];
     dispatch(bulkActions.startBatchMode())
@@ -457,6 +458,7 @@ export const changeSelectedSpeakerNumber = speakerNumber => (dispatch, getState)
         
         dispatch(setCurrentSlideIndex(0));
         dispatch(setCurrentSubslideIndex(0));
+        dispatch(setListIndex(0))
         dispatch(setSelectedSpeakerNumber(speakerNumber));
         dispatch(setTranslatableArticle(translatableArticle));
         dispatch(setOriginalViewedArticle(originalViewedArticle))
@@ -562,6 +564,7 @@ export const fetchTranslatableArticle = ({ articleId, loading = true, langCode, 
     .get(Api.translate.getTranslatableArticle(articleId,  {langCode, langName, tts} ))
     .then((res) => {
         const { article, originalArticle } = res.body;
+        dispatch(fetchArticleVideo(article.video));
         const subslides = reduceSlidesSubslides(article.slides);
         subslides.forEach((subslide, index) => {
             subslide.index = index;
@@ -1004,6 +1007,9 @@ export const updatePictureInPicturePosition = (slidePosition, subslidePosition, 
 
 export const saveRecordedTranslation = (slidePosition, subslidePosition, blob) => (dispatch, getState) => {
     // dispatch(setRecordUploadLoading(true));
+    if (!blob) {
+        return NotificationService.error('Something went wrong. please re-record this slide');
+    }
     const { translatableArticle } = getState()[moduleName]
     const url = URL.createObjectURL(blob);
     const slideIndex = translatableArticle.slides.findIndex((s) => s.position === slidePosition);

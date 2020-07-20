@@ -1,4 +1,4 @@
-import { IMAGE_EXTENSIONS, VIDEOS_EXTESION, GIF_EXTESIONS } from '../constants';
+import { IMAGE_EXTENSIONS, VIDEOS_EXTESION, GIF_EXTESIONS, SPEAKER_BACKGROUND_COLORS, SPEAKER_TEXT_COLORS } from '../constants';
 import { isoLangs, supportedLangs } from '../constants/langs'
 
 export const getUrlMediaType = function (url) {
@@ -195,4 +195,8 @@ export function getSpeakersTranslatorsMap(speakersProfile, translators, users) {
 
 export function getUserName(user) {
   return user.firstname && user.lastname ? `${user.firstname} ${user.lastname} (${user.email})` : user.email;
+}
+
+export function formatSubslideToSubtitle(subslide) {
+    return ({ ...subslide, startTime: subslide.startTime * 1000, endTime: subslide.endTime * 1000, text: subslide.text, speakerNumber: subslide.speakerProfile.speakerNumber, backgroundColor: SPEAKER_BACKGROUND_COLORS[subslide.speakerProfile.speakerNumber], color: SPEAKER_TEXT_COLORS[subslide.speakerProfile.speakerNumber] })
 }
