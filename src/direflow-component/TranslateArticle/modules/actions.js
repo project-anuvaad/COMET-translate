@@ -695,6 +695,10 @@ export const saveTranslatedText = (slidePosition, subslidePosition, text) => (di
         dispatch(setTranslatableArticle({ ...translatableArticle }));
         dispatch(updateOriginalTranslatableArticle(slidePosition, subslidePosition, changes))
         dispatch(bulkActions.flushBatchedActions());
+
+        if (translatableArticle.tts) {
+            dispatch(addTTSTranslation(slidePosition, subslidePosition))
+        }
     })
     .catch((err) => {
         console.log(err);
