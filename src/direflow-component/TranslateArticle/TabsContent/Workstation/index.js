@@ -242,7 +242,7 @@ class Workstation extends React.Component {
         // admins and project leaders can modify text directly
         if (canUserAccess(user, organization, ['admin', 'project_leader'])) return true;
         // If the article is not in text_translation or text_translation_done stages, prohibit text update
-        if (translatableArticle.stage && ['text_translation', 'text_translation_done'].indexOf(translatableArticle.stage) === -1) return false;
+        // if (translatableArticle.stage && ['text_translation', 'text_translation_done'].indexOf(translatableArticle.stage) === -1) return false;
         // if verifier and stage is text_translation_done he can edit the text
         if (translatableArticle.stage === 'text_translation_done' && verifiers && verifiers.length > 0 && verifiers.indexOf(user._id) !== -1) {
             return true;
