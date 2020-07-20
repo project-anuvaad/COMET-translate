@@ -3,7 +3,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import querystring from 'query-string';
 import Lottie from 'react-lottie';
-import { Grid, Card, Button, Icon, Input, Progress, Select, Popup, Sidebar, Checkbox, Dropdown } from 'semantic-ui-react';
+import { Grid, Card, Button, Icon, Input, Progress, Select, Popup, Sidebar, Checkbox, Dropdown, DropdownDivider } from 'semantic-ui-react';
 import moment from 'moment';
 import ReactAvatar from 'react-avatar';
 import Dropzone from 'react-dropzone';
@@ -51,6 +51,11 @@ import { Styled } from 'direflow-component';
 import TranslationVersionSelectModal from './TranslationVersionSelectModal';
 import TranslatingVideoTutorialModal from '../../components/TranslatingVideoTutorialModal';
 import DeleteModalRecording from '../../components/DeleteRecordingModal';
+import TextTranslationTutorialModal from '../../components/TextTranslationTutorialModal';
+import TextTranslationApprovalTutorialModal from '../../components/TextTranslationApprovalTutorialModal';
+import VoiceOverTranslationTutorialModal from '../../components/VoiceOverTranslationTutorialModal';
+import VoiceOverTranslationApprovalTutorialModal from '../../components/VoiceOverTranslationApprovalTutorialModal';
+import StagesProcess from '../../components/StagesProcess/index';
 
 const FETCH_ARTICLE_JOBNAME = 'FETCH_TRANSLATE_ARTICLE';
 
@@ -81,6 +86,8 @@ const calculateCompletedArticlePercentage = article => {
 
 class Workstation extends React.Component {
     state = {
+        activeStageTutorial: '',
+        stageProcessOpen: false,
         pollerStarted: false,
         videoSpeedPollerStarted: false,
         translationVersionModalVisible: false,
@@ -762,6 +769,64 @@ class Workstation extends React.Component {
         return loadingSlides && loadingSlides.find((slide) => slide.slideIndex === currentSlideIndex && slide.subslideIndex === currentSubslideIndex) ? true : false;
     }
 
+    renderTutorialButton = () => {
+        const { translatableArticle } = this.props;
+        if (!translatableArticle) return null;
+        let button;
+        const generateButton = ({ text, stage }) => (
+                <Button
+                    circular
+                    color="green"
+                    size="tiny"
+                    onClick={() => this.setState({ activeStageTutorial: stage })}
+                >
+                    {text} <Icon name="info circle" style={{ marginLeft: 10 }} />
+                </Button>
+        )
+        switch(translatableArticle.stage) {
+            case 'text_translation':
+                return generateButton({ text: 'Text Translation Tutorial', stage: 'text_translation' })
+            case 'text_translation_done':
+                return generateButton({ text: 'Text Translation Approval Tutorial', stage: 'text_translation_done'})
+            case 'voice_over_translation':
+                return generateButton({ text: 'Voice-over Translation Tutorial', stage: 'voice_over_translation' });
+            case 'voice_over_translation_done':
+                return generateButton({ text: 'Voice-over Approval Tutorial', stage: 'voice_over_translation_done' });
+            default:
+                return null;
+        } 
+    }
+
+    renderStageTutorialModal = () => {
+       const { activeStageTutorial } = this.state; 
+       const props = {
+            open: true,
+            onClose:() => this.setState({ activeStageTutorial: '' }),
+            showOnStartup: this.props.user && this.props.user.showTranslatingTutorial,
+            onChangeShowOnStartup: (show) => this.props.updateShowTranslationTutorial(show),
+       }
+       switch(activeStageTutorial) {
+           case 'text_translation':
+               return ( <TextTranslationTutorialModal
+                    {...props}
+                />)
+            case 'text_translation_done':
+                return <TextTranslationApprovalTutorialModal
+                    {...props}
+                />
+            case 'voice_over_translation':
+                return <VoiceOverTranslationTutorialModal
+                        {...props}
+                    />
+            case 'voice_over_translation_done':
+                return <VoiceOverTranslationApprovalTutorialModal
+                        {...props}
+                    />
+            default:
+                return null;
+       }
+    }
+
     renderSignLangUpload = () => {
         const { slide, subslide } = this.getCurrentSlideAndSubslide();
         if (!subslide) return null;
@@ -902,6 +967,17 @@ class Workstation extends React.Component {
                 {!this.props.preview ? (
                     <Grid.Row>
                         <Grid.Column computer={16} mobile={16}>
+                            <div style={{ position: 'absolute', top: 10, right: 10 }}>
+                                <Popup
+                                    position="bottom left"
+                                    trigger={<span style={{ cursor: 'pointer' }} onClick={() => this.setState({ stageProcessOpen: true })} ><Icon name="question circle" /> Know how it works</span>}
+                                    content={<StagesProcess onStageClick={(stage) => this.setState({ activeStageTutorial: stage, stageProcessOpen: false })} activeStage={translatableArticle.stage} />}
+                                    on="click"
+                                    open={this.state.stageProcessOpen}
+                                    onClose={() => this.setState({ stageProcessOpen: false })}
+                                    // hoverable
+                                />
+                            </div>
                             {translatableArticle.slides[currentSlideIndex] && (
                                 <TranslateBox
                                     showPause={translatableArticle.tts}
@@ -1166,9 +1242,9 @@ class Workstation extends React.Component {
         } = this.props;
         const { slide, subslide } = this.getCurrentSlideAndSubslide();
         const canModify = this.canModify();
-        const assignedTranslations = this.getUserAssignedTranslations();
-        const isAssignedForTextTranslations = this.isAssignedForTextTranslations();
-        const isAssignedAsApprover = this.isAssignedAsApprover();
+        // const assignedTranslations = this.getUserAssignedTranslations();
+        // const isAssignedForTextTranslations = this.isAssignedForTextTranslations();
+        // const isAssignedAsApprover = this.isAssignedAsApprover();
         const selectedTranslator = this.getSelectedTranslator();
         const speakerTranslatorsMap = this.getSpeakersTranslatorsMap();
         const versionedSubslides = this.getVersionedSubslides();
@@ -1265,15 +1341,7 @@ class Workstation extends React.Component {
                                                             )}
                                                         </div>
                                                         <div style={{ marginTop: '1rem' }} >
-
-                                                            <Button
-                                                                circular
-                                                                color="green"
-                                                                size="tiny"
-                                                                onClick={() => this.setState({ isTranslatingVideoTutorialModalVisible: true })}
-                                                            >
-                                                                Translation Tutorial <Icon name="info circle" style={{ marginLeft: 10 }} />
-                                                            </Button>
+                                                            {this.renderTutorialButton()}
                                                         </div>
                                                     </div>
                                                 </React.Fragment>
@@ -1621,12 +1689,7 @@ class Workstation extends React.Component {
                                 translationVersions={this.props.translationVersions}
                                 versionedSubslides={versionedSubslides}
                             />
-                            <TranslatingVideoTutorialModal
-                                open={this.state.isTranslatingVideoTutorialModalVisible}
-                                onClose={() => this.setState({ isTranslatingVideoTutorialModalVisible: false })}
-                                showOnStartup={this.props.user && this.props.user.showTranslatingTutorial}
-                                onChangeShowOnStartup={(show) => this.props.updateShowTranslationTutorial(show)}
-                            />
+                            {this.renderStageTutorialModal()}
                         </Grid>
 
                     </LoaderComponent>

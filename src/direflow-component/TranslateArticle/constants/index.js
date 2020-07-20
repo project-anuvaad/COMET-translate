@@ -36,3 +36,19 @@ export const SPEAKER_TEXT_COLORS = {
 export const WEBSOCKET_SERVER_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : 'https://api.videowiki.org';
 export const LOCALSTORAGE_API_KEY_KEY = 'vw-x-user-api-key'
 export const LOCALSTORAGE_API_ROOT_KEY = 'vw-api-root';
+
+export const ARTICLE_STAGES = {
+  TEXT_TRANSLATION: "text_translation",
+  TEXT_TRANSLATION_DONE: "text_translation_done",
+  VOICE_OVER_TRANSLATION: "voice_over_translation",
+  VOICE_OVER_TRANSLATION_DONE: "voice_over_translation_done",
+  DONE: "done",
+};
+
+export const ARTICLE_STAGES_TITLES = {
+  text_translation: "Text translation",
+  text_translation_done: "Approval: Text translation",
+  voice_over_translation: "Voice-over translation",
+  voice_over_translation_done: "Approval: Voice-over",
+  done: "Completed",
+};

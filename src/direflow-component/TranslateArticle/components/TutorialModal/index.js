@@ -93,13 +93,13 @@ export default class TutorialModal extends React.Component {
                             {ActiveStep}
                         </div>
                         <div className="bottom-content">
-                            <div className="skip-on-start">
+                            {/* <div className="skip-on-start">
                                 <Checkbox
                                     label="Show this tutorial on startup"
                                     checked={this.props.showOnStartup}
                                     onChange={(e, { checked }) => this.props.onChangeShowOnStartup(checked)}
                                 />
-                            </div>
+                            </div> */}
                             <div className="nav-buttons-container">
 
                                 <div>
