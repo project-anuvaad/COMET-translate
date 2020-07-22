@@ -1380,9 +1380,9 @@ class Workstation extends React.Component {
                                                                     </Button>
                                                             )}
                                                         </div>
-                                                        <div style={{ marginTop: '1rem' }} >
+                                                        {/* <div style={{ marginTop: '1rem' }} >
                                                             {this.renderTutorialButton()}
-                                                        </div>
+                                                        </div> */}
                                                     </div>
                                                 </React.Fragment>
                                             )}
