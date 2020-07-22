@@ -45,10 +45,11 @@ function PauseIcon(props) {
         display: "inline-block",
         // width: 20,
         // height: 20,
-        cursor: 'pointer',
+        cursor: "pointer",
         color: "white",
         textAlign: "center",
         borderRadius: "20rem",
+        marginLeft: 10,
       }}
       {...props}
     >
@@ -385,6 +386,19 @@ class TranslateBox extends React.Component {
                   rows={6}
                   placeholder="Translate slide text"
                   value={value}
+                  onBlur={(e) => {
+                    if (
+                      !loading &&
+                      value.trim() !== this.props.value.trim() &&
+                      value.trim()
+                    ) {
+                      this.props.onSave(
+                        value,
+                        this.props.currentSlideIndex,
+                        this.props.currentSubslideIndex
+                      );
+                    }
+                  }}
                   onChange={(e, { value }) => {
                     this.onValueChange(
                       value,
@@ -396,9 +410,9 @@ class TranslateBox extends React.Component {
               ) : (
                 <div
                   style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    overflowY: 'scroll',
+                    display: "flex",
+                    flexWrap: "wrap",
+                    overflowY: "scroll",
                     padding: 20,
                     paddingRight: 40,
                     marginBottom: 40,
@@ -412,32 +426,51 @@ class TranslateBox extends React.Component {
                   ref={(ref) => (this.editableRef = ref)}
                 >
                   {/* Add empty part at the end to support adding pause at the end of the text */}
-                  {this.state.value.split(" ").concat(['']).map((w, i) => (
-                    <span
-                      onDragEnter={(e) => {
-                        e.preventDefault();
-                      }}
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        e.target.style["border-left"] = "5px solid red";
-                      }}
-                      onDragLeave={(e) => {
-                        e.preventDefault();
-                        e.target.style["border-left"] = "none";
-                      }}
-                      onDrop={(e) => {
-                        e.target.style["border-left"] = "none";
-                        console.log("on drop", i, w);
-                        const { value } = this.state;
-                        let newValue = value.split(" ");
-                        newValue.splice(i, 0, `{{pause:${this.state.pause}}}`);
-                        this.onValueChange(newValue.join(" "));
-                      }}
-                      key={w + i}
-                    >
-                      {w ? <span>{w}&nbsp;</span> : <span style={{ display: 'inline-block', width: 50 }}>&nbsp;&nbsp;&nbsp;&nbsp;</span>}
-                    </span>
-                  ))}
+                  {this.state.value
+                    .split(" ")
+                    .concat([""])
+                    .map((w, i) => (
+                      <span
+                        onDragEnter={(e) => {
+                          e.preventDefault();
+                        }}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          e.target.style["border-left"] = "5px solid red";
+                        }}
+                        onDragLeave={(e) => {
+                          e.preventDefault();
+                          e.target.style["border-left"] = "none";
+                        }}
+                        onDrop={(e) => {
+                          e.target.style["border-left"] = "none";
+                          console.log("on drop", i, w);
+                          const { value } = this.state;
+                          let newValue = value.split(" ");
+                          newValue.splice(
+                            i,
+                            0,
+                            `{{pause:${this.state.pause}}}`
+                          );
+                          newValue = newValue.join(" ");
+                          this.onValueChange(newValue);
+                          this.props.onSave(
+                            newValue,
+                            this.props.currentSlideIndex,
+                            this.props.currentSubslideIndex
+                          );
+                        }}
+                        key={w + i}
+                      >
+                        {w ? (
+                          <span>{w}&nbsp;</span>
+                        ) : (
+                          <span style={{ display: "inline-block", width: 50 }}>
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                          </span>
+                        )}
+                      </span>
+                    ))}
                 </div>
               )}
 
