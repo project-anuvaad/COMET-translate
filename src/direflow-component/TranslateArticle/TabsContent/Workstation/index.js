@@ -3,7 +3,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import querystring from 'query-string';
 import Lottie from 'react-lottie';
-import { Grid, Card, Button, Icon, Input, Progress, Select, Popup, Sidebar, Checkbox, Dropdown, DropdownDivider } from 'semantic-ui-react';
+import { Grid, Card, Button, Icon, Input, Progress, Select, Popup, Sidebar, Checkbox, Dropdown, DropdownDivider, Modal } from 'semantic-ui-react';
 import moment from 'moment';
 import ReactAvatar from 'react-avatar';
 import Dropzone from 'react-dropzone';
@@ -28,6 +28,7 @@ import EditAudioSpeedModal from '../../components/EditAudioSpeedModal';
 // LOTTIES
 import aroundTheWorldLottie from '../../lottie/around-the-world.json';
 import speedLottie from '../../lottie/speed.json';
+import successLottie from '../../lottie/success-animation.json'
 
 // import websockets from '../../../../../websockets';
 
@@ -692,6 +693,27 @@ class Workstation extends React.Component {
             }
         />
     }
+    renderSuccessLottie = () => {
+        const defaultOptions = {
+            autoplay: true,
+            loop: false,
+            animationData: successLottie,
+            rendererSettings: {
+                preserveAspectRatio: 'xMidYMid slice'
+            }
+        };
+
+        return (
+            <div key="translate-progress-loader" style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
+                <div style={{ width: '100%' }}>
+                    <Lottie options={defaultOptions}
+                        height={200}
+                        width={200}
+                    />
+                </div>
+            </div>
+        )
+    }
 
     renderLoadingLottie = () => {
         const defaultOptions = {
@@ -825,6 +847,46 @@ class Workstation extends React.Component {
                 return <VoiceOverTranslationApprovalTutorialModal
                         {...props}
                     />
+            case 'done':
+                return <Modal
+                    {...props}
+                    size="tiny"
+                >
+                    <Modal.Header>
+                        <h3>
+                            Completed
+                             <Button
+                                circular
+                                style={{ position: 'absolute', right: 10, top: 10 }}
+                                basic
+                                icon="close"
+                                onClick={this.toggleOpen}
+                            />
+                        </h3>
+                    </Modal.Header>
+                    <Modal.Content>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column'}}>
+                            <div>
+                                {this.renderSuccessLottie()}
+                            </div>
+                            <p>
+                                <strong>
+                                    The video will be fully translated if you followed the above steps properly.
+                                </strong>
+                            </p>
+                        </div>
+                    </Modal.Content>
+                    <Modal.Actions>
+                        <Button 
+                            primary
+                            circular
+                            onClick={props.onClose}
+                        >
+                            Ok
+                        </Button>
+                    </Modal.Actions>
+
+                </Modal>
             default:
                 return null;
        }
