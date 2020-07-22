@@ -10,6 +10,7 @@
         &.active {
             opacity: 1 !important;
             .label {
+                border: 1px dashed;
                 background-color: #0e7ceb !important;
                 opacity: 1 !important;
             }
