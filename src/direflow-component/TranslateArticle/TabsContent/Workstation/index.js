@@ -922,8 +922,11 @@ class Workstation extends React.Component {
     renderTimeline = () => {
 
         const { listIndex, subslides } = this.props;
+        if (!subslides || subslides.length === 0 ) return null;
+        const currentSubslide = subslides[listIndex];
+        if (!currentSubslide) return null;
         const elapsedTime = listIndex === 0 ? 0 : subslides[listIndex - 1].endTime * 1000; 
-        console.log(this.state.currentTime, 'current time')
+
         return <VideoTimelineV2
             currentTime={ elapsedTime + this.state.currentTime}
             onTimeChange={(time) => {
@@ -939,7 +942,8 @@ class Workstation extends React.Component {
             }}
             duration={this.props.video.duration * 1000}
             // subtitles={this.props.subslides.map(s => ({ ...s, startTime: s.startTime * 1000, endTime: s.endTime * 1000, speakerNumber: s.speakerProfile.speakerNumber, backgroundColor: 'blue' }))}
-            subtitles={this.props.subslides.map(formatSubslideToSubtitle)}
+            // subtitles={this.props.subslides.map(formatSubslideToSubtitle)}
+            subtitles={[formatSubslideToSubtitle(currentSubslide)]}
             selectedSubtitleIndex={
             this.props.listIndex
             }
