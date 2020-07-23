@@ -1563,6 +1563,7 @@ class Workstation extends React.Component {
                                                         </div>
                                                     </Grid.Column>
                                                 </Grid.Row>
+                                                {translatableArticle && translatableArticle.tts && (
                                                     <Grid.Row>
                                                         <Grid.Column width={16}>
                                                             <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10  }}>
@@ -1590,6 +1591,7 @@ class Workstation extends React.Component {
                                                         )}
                                                         </Grid.Column>
                                                     </Grid.Row>
+                                                )}
                                                 <Grid.Row>
                                                     <Grid.Column width={16}>
                                                         <CommentsSidebar />
