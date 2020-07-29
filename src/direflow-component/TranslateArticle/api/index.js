@@ -65,6 +65,7 @@ export default {
         addRecordedTranslation: (translateableArticleId) => `${getApiRoot()}/translate/${translateableArticleId}/audio`,
         addPictureInPicture: (translateableArticleId) => `${getApiRoot()}/translate/${translateableArticleId}/picInPic`,
         updatePictureInPicturePosition: (translateableArticleId) => `${getApiRoot()}/translate/${translateableArticleId}/picInPic/position`,
+        updateSubslideTiming: (translateableArticleId) => `${getApiRoot()}/translate/${translateableArticleId}/time`,
         addTTSTranslation: (translateableArticleId) => `${getApiRoot()}/translate/${translateableArticleId}/audio/tts`,
         updateAudioFromOriginal: (translateableArticleId) => `${getApiRoot()}/translate/${translateableArticleId}/audio/original`,
         deleteRecordedTranslation: (translateableArticleId) => `${getApiRoot()}/translate/${translateableArticleId}/audio`,

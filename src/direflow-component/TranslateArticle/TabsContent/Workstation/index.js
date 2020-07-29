@@ -3,7 +3,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import querystring from 'query-string';
 import Lottie from 'react-lottie';
-import { Grid, Card, Button, Icon, Input, Progress, Select, Popup, Sidebar, Checkbox, Dropdown, DropdownDivider, Modal } from 'semantic-ui-react';
+import { Grid, Card, Button, Icon, Input, Progress, Select, Popup, Sidebar, Checkbox, Dropdown, DropdownDivider, Modal, TransitionablePortal } from 'semantic-ui-react';
 import moment from 'moment';
 import ReactAvatar from 'react-avatar';
 import Dropzone from 'react-dropzone';
@@ -92,6 +92,7 @@ class Workstation extends React.Component {
         activeStageTutorial: '',
         stageProcessOpen: false,
         pollerStarted: false,
+        videoSlicePollerStarted: false,
         videoSpeedPollerStarted: false,
         translationVersionModalVisible: false,
         isTranslatingVideoTutorialModalVisible: false,
@@ -149,6 +150,13 @@ class Workstation extends React.Component {
                 setTimeout(() => {
                     this.setState({ highlightMaxTime: false })
                 }, 3000);
+            }
+            if (nextProps.translatableArticle.videoSliceLoading && !this.state.videoSlicePollerStarted) {
+                this.setState({ videoSlicePollerStarted: true });
+                this.startFetchArticleJob();
+            } else if (!nextProps.translatableArticle.videoSliceLoading && this.state.videoSlicePollerStarted) {
+                this.setState({ videoSlicePollerStarted: false });
+                this.stopFetchArticleJob();
             }
             if (nextProps.translatableArticle.translationProgress !== 100 && !this.state.pollerStarted) {
                 this.setState({ pollerStarted: true })
@@ -761,6 +769,28 @@ class Workstation extends React.Component {
             </div>
         )
     }
+    renderSliceLoadingLottie = () => {
+        const defaultOptions = {
+            loop: true,
+            autoplay: true,
+            animationData: speedLottie,
+            rendererSettings: {
+                preserveAspectRatio: 'xMidYMid slice'
+            }
+        };
+
+        return (
+            <div key="translate-progress-loader" style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
+                <div style={{ width: '50%' }}>
+                    <Lottie options={defaultOptions}
+                        height={400}
+                        width={400}
+                    />
+                    <p style={{ textAlign: 'center', fontSize: '2rem', padding: '1rem' }}>Adjusting Slide timing...</p>
+                </div>
+            </div>
+        )
+    }
 
     renderAssignUsersModal = () => {
         const users = this.getTranslators();
@@ -987,7 +1017,7 @@ class Workstation extends React.Component {
         if (!subslides || subslides.length === 0 ) return null;
         const currentSubslide = subslides[listIndex];
         if (!currentSubslide) return null;
-        const elapsedTime = listIndex === 0 ? 0 : subslides[listIndex - 1].endTime * 1000; 
+        const elapsedTime = listIndex === 0 ? subslides[0].startTime * 1000 : subslides[listIndex - 1].endTime * 1000; 
 
         return <VideoTimelineV2
             currentTime={ elapsedTime + this.state.currentTime}
@@ -1002,6 +1032,15 @@ class Workstation extends React.Component {
                     // this.onTimeChange()
                  }
             }}
+            onSubtitleChange={(subtitle, _, changes) => {
+                if (!changes.startTime) {
+                    changes.startTime = subtitle.startTime / 1000
+                }
+                if (!changes.endTime) {
+                    changes.endTime = subtitle.endTime / 1000
+                }
+                this.props.updateSubslideTiming({ articleId: this.props.translatableArticle._id, slidePosition: subtitle.slidePosition, subslidePosition: subtitle.subslidePosition, ...changes });
+            }}
             duration={this.props.video.duration * 1000}
             // subtitles={this.props.subslides.map(s => ({ ...s, startTime: s.startTime * 1000, endTime: s.endTime * 1000, speakerNumber: s.speakerProfile.speakerNumber, backgroundColor: 'blue' }))}
             // subtitles={this.props.subslides.map(formatSubslideToSubtitle)}
@@ -1009,9 +1048,6 @@ class Workstation extends React.Component {
             selectedSubtitleIndex={
             this.props.listIndex
             }
-            disableEditing={true}
-            // onSubtitleChange={this.onSaveSubtitle}
-            // onAddSubtitle={this.onAddSubtitle}
             onSubtitleSelect={(subtitle, index) =>{
                 this.onSlideChange(subtitle.slideIndex, subtitle.subslideIndex)
             }}
@@ -1376,7 +1412,14 @@ class Workstation extends React.Component {
                                     </Grid.Column>
                                 </Grid.Row>
                             )}
-                            {originalViewedArticle && translatableArticle && translatableArticle.translationProgress === 100 && !translatableArticle.videoSpeedLoading && (
+                            {translatableArticle && translatableArticle.videoSliceLoading && (
+                                <Grid.Row>
+                                    <Grid.Column width={16}>
+                                        {this.renderSliceLoadingLottie()}
+                                    </Grid.Column>
+                                </Grid.Row>
+                            )}
+                            {originalViewedArticle && translatableArticle && translatableArticle.translationProgress === 100 && !translatableArticle.videoSpeedLoading && !translatableArticle.videoSliceLoading && (
                                 <React.Fragment>
                                     <Grid.Row>
                                         <Grid.Column width={16}>
@@ -1874,6 +1917,7 @@ const mapDispatchToProps = dispatch => ({
     onPreviewChange: preview => dispatch(translationActions.onPreviewChange(preview)),
     changeSelectedSpeakerNumber: num => dispatch(translationActions.changeSelectedSpeakerNumber(num)),
     updateSubslide: (slidePositon, subslidePosition, audio) => dispatch(translationActions.updateSubslide(slidePositon, subslidePosition, audio)),
+    updateSubslideTiming: (params) => dispatch(translationActions.updateSubslideTiming(params)),
     addTTSTranslation: (slidePosition, subslidePosition) => dispatch(translationActions.addTTSTranslation(slidePosition, subslidePosition)),
     syncAllFromTTS: () => dispatch(translationActions.syncAllFromTTS()),
     requestExportTranslationReview: (articleId) => dispatch(translationActions.requestExportTranslationReview(articleId)),

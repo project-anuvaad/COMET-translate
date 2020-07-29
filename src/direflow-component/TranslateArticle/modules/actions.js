@@ -135,6 +135,11 @@ export const setRecording = recording => ({
     payload: recording,
 })
 
+export const setSubslides = subslides => ({
+    type: actionTypes.SET_SUBSLIDES,
+    payload: subslides,
+})
+
 export const setCurrentEditorIndexes = payload => ({
     type: actionTypes.SET_CURRENT_EDITOR_INDEXES,
     payload,
@@ -655,6 +660,52 @@ export const fetchTranslatableArticle = ({ articleId, loading = true, langCode, 
     })
 }
 
+export const updateSubslideTiming = ({ slidePosition, subslidePosition, startTime, endTime }) => (dispatch, getState) => {
+    const { translatableArticle } = getState()[moduleName]
+    requestAgent
+    .post(Api.translate.updateSubslideTiming(translatableArticle._id), { slidePosition, subslidePosition, startTime, endTime })
+    .then((res) => {
+        const { videoSliceLoading } = res.body;
+        if (videoSliceLoading) {
+            const { translatableArticle } = getState()[moduleName];
+            translatableArticle.videoSliceLoading = videoSliceLoading;
+            dispatch(setTranslatableArticle(_.cloneDeep(translatableArticle)));
+        }
+        // const { translatableArticle } = getState()[moduleName]
+        // const { slidePosition, subslidePosition, ...rest } = res.body;
+        // const slideIndex = translatableArticle.slides.findIndex((s) => s.position === slidePosition);
+        // const subslideIndex = translatableArticle.slides[slideIndex].content.findIndex((s) => s.position === subslidePosition);
+        // const changes = {};
+        // Object.keys(rest).forEach(key => {
+        //     translatableArticle.slides[slideIndex].content[subslideIndex][key] = rest[key];    
+        //     changes[key] = rest[key];
+        // })
+        // dispatch(bulkActions.startBatchMode());
+        // const subslide = subslides.find(s => s.slidePosition === slidePosition && s.subslidePosition === subslidePosition)
+        // if (subslide) {
+        //     Object.keys(rest).forEach(key => {
+        //         subslide[key] = rest[key];    
+        //     })
+        //     dispatch(setSubslides(subslides.slice()))
+        // }
+        // dispatch(setTranslatableArticle({ ...translatableArticle }));
+        // dispatch(updateOriginalTranslatableArticle(slidePosition, subslidePosition, { startTime, endTime }));
+        // dispatch(bulkActions.flushBatchedActions());
+
+    })
+    .catch((err) => {
+        console.log(err);
+        const slideIndex = translatableArticle.slides.findIndex((s) => s.position === slidePosition);
+        const subslideIndex = translatableArticle.slides[slideIndex].content.findIndex((s) => s.position === subslidePosition);
+        translatableArticle.slides[slideIndex].content[subslideIndex] = { ... translatableArticle.slides[slideIndex].content[subslideIndex] };
+        dispatch(bulkActions.startBatchMode());
+        dispatch(setTranslatableArticle({ ...translatableArticle }));
+        // dispatch(updateOriginalTranslatableArticle(slidePosition, subslidePosition, { startTime, endTime }))
+        dispatch(bulkActions.flushBatchedActions());
+        NotificationService.responseError(err);
+    })
+}
+
 export const updateSubslide = (slidePosition, subslidePosition, changes) => (dispatch, getState) => {
     const { translatableArticle, originalTranslatableArticle } = getState()[moduleName];
     const slide = translatableArticle.slides.find(s => s.position === slidePosition);
@@ -678,7 +729,7 @@ export const updateSubslide = (slidePosition, subslidePosition, changes) => (dis
 }
 
 export const saveTranslatedText = (slidePosition, subslidePosition, text) => (dispatch, getState) => {
-    const { translatableArticle } = getState()[moduleName]
+    const { translatableArticle, subslides } = getState()[moduleName]
     requestAgent
     .post(Api.translate.addTranslatedText(translatableArticle._id), { slidePosition, subslidePosition, text })
     .then((res) => {
@@ -692,6 +743,13 @@ export const saveTranslatedText = (slidePosition, subslidePosition, text) => (di
             changes[key] = rest[key];
         })
         dispatch(bulkActions.startBatchMode());
+        const subslide = subslides.find(s => s.slidePosition === slidePosition && s.subslidePosition === subslidePosition)
+        if (subslide) {
+            Object.keys(rest).forEach(key => {
+                subslide[key] = rest[key];    
+            })
+            dispatch(setSubslides(subslides.slice()))
+        }
         dispatch(setTranslatableArticle({ ...translatableArticle }));
         dispatch(updateOriginalTranslatableArticle(slidePosition, subslidePosition, changes))
         dispatch(bulkActions.flushBatchedActions());
@@ -1239,7 +1297,6 @@ export const updateArticleVideoSpeed = ({articleId, speed, type, slidePosition, 
     requestAgent
     .post(Api.translate.updateVideoSpeed(articleId), { videoSpeed: speed, type, slidePosition, subslidePosition })
     .then((res) => {
-        console.log(res.body);
         const { videoSpeedLoading } = res.body;
         if (videoSpeedLoading) {
             const { translatableArticle } = getState()[moduleName];
