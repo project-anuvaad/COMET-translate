@@ -28,7 +28,7 @@ export default class ProofreadingVideoPlayerV2 extends React.Component {
                     >
                         <video
                             width={'100%'}
-                            style={{ maxWidth: '100%', margin: '0 auto', display: 'block' }}
+                            style={{ maxWidth: '100%', maxHeight: 500, margin: '0 auto', display: 'block' }}
                             muted={!!this.props.audio || this.props.muted}
                             currentTime={this.props.currentTime}
                             src={this.props.url}
