@@ -57,7 +57,7 @@ export default class EditVideoSpeedModal extends React.Component {
                             <Grid.Column width={4}>
                                 <Input
                                     type='number'
-                                    min={10}
+                                    min={50}
                                     max={200}
                                     step={10}
                                     fluid
