@@ -9,7 +9,7 @@ const direflowComponent = new DireflowComponent();
 
 const direflowProperties = {
   apiKey: '',
-  apiRoot: process.env.NODE_ENV === 'production' ? 'https://api.videowiki.org/api' :  'http://localhost:4000/api',
+  apiRoot: process.env.NODE_ENV === 'production' ? 'https://comet.anuvaad.org/api' :  'http://localhost:4000/api',
   articleId: '',
   backRoute: '',
   // apiKey: '',
@@ -29,7 +29,7 @@ const direflowPlugins = [
 ];
 
 direflowComponent.configure({
-  name: 'vw-translate',
+  name: 'vd-translate',
   // useShadow: true,
   properties: direflowProperties,
   plugins: direflowPlugins,

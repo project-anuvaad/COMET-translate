@@ -71,9 +71,9 @@ class SlidesList extends React.Component {
       const url = subslide.media[0].smallThumb || subslide.media[0].url;
       if (subslide.media[0].smallThumb) {
         comp = <img src={url} alt="" />;
-      } else if (subslide.media[0].mediaType === 'video') {
-        comp = <img src={VIDEO_PLAYER_THUMBNAIL_IMAGE} alt="" />
-        // comp = <video preload={"false"} src={url} width="100%" height="100%" />;
+      // } else if (subslide.media[0].mediaType === 'video') {
+      //   comp = <img src={VIDEO_PLAYER_THUMBNAIL_IMAGE} alt="" />
+      //   // comp = <video preload={"false"} src={url} width="100%" height="100%" />;
       } else {
         comp = <img src={url} alt="" />;
       }

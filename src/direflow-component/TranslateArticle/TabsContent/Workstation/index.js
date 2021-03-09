@@ -953,7 +953,7 @@ class Workstation extends React.Component {
                                                 />
                                             ) : (
                                                     <div className="dropbox">
-                                                        <img src="https://tailoredvideowiki.s3-eu-west-1.amazonaws.com/static/upload-cloud.png" />
+                                                        <img src="/img/upload-cloud.png" />
                                                         <p className="description">Drag and drop a video file here to upload</p>
                                                         <p className="extra">or just click here to choose a video file</p>
                                                     </div>
@@ -1106,7 +1106,7 @@ class Workstation extends React.Component {
                 {!this.props.preview ? (
                     <Grid.Row>
                         <Grid.Column computer={16} mobile={16}>
-                            <div style={{ position: 'absolute', top: 10, right: 10 }}>
+                            {/* <div style={{ position: 'absolute', top: 10, right: 10 }}>
                                 <Popup
                                     position="bottom left"
                                     trigger={<span style={{ cursor: 'pointer' }} onClick={() => this.setState({ stageProcessOpen: true })} ><Icon name="question circle" /> Know how it works</span>}
@@ -1116,7 +1116,7 @@ class Workstation extends React.Component {
                                     onClose={() => this.setState({ stageProcessOpen: false })}
                                     // hoverable
                                 />
-                            </div>
+                            </div> */}
                             {translatableArticle.slides[currentSlideIndex] && (
                                 <TranslateBox
                                     showPause={translatableArticle.tts}
