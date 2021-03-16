@@ -4,7 +4,7 @@
 This web component is part of comet.anuvaad.org and used for the translation stage
 
 ### Usage:
-Use the web component `vd-proofread` anywhere on the page with the following properties  
+Use the web component `vd-translate` anywhere on the page with the following properties  
 
 `<vd-translate apiKey="" apiRoot="" articleId=""></vd-translate>`
 `
