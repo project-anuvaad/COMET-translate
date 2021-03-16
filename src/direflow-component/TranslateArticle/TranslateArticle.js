@@ -42,7 +42,7 @@ class TranslateArticle extends React.Component {
     }
 
     getTabItems = () => {
-        const generateSubtitleTitle = (props = {}) => this.props.subtitles ? (
+        const generateSubtitleTitle = (props = {}) => !this.props.subtitles ? (
             <Button {...props}>
                 Generate Subtitles
             </Button>
@@ -64,9 +64,9 @@ class TranslateArticle extends React.Component {
                             style={{ width: 800, height: 500 }}
                         >
                             <Grid.Row>
-                                <Grid.Column width={10}>
+                                {/* <Grid.Column width={10}>
                                     <img src="https://tailoredvideowiki.s3-eu-west-1.amazonaws.com/static/undraw_security_o890.png" width="100%" />
-                                </Grid.Column>
+                                </Grid.Column> */}
                                 <Grid.Column width={6} style={{ display: 'flex', alignItems: 'center' }}>
                                     <h2>
                                         You can generate subtitles only after the ADMIN approves your video

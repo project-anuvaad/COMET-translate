@@ -1,7 +1,7 @@
 {
-  "name": "@videowiki/vw-translate",
-  "description": "Videowiki Translate microapp",
-  "version": "3.0.7",
+  "name": "@comet-anuvaad/video-translate",
+  "description": "COMET Translate microapp",
+  "version": "1.0.0",
   "scripts": {
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
@@ -67,5 +67,13 @@
       "last 1 safari version"
     ]
   },
-  "config-overrides-path": "direflow-webpack.js"
+  "config-overrides-path": "direflow-webpack.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/project-anuvaad/COMET-translate.git"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/project-anuvaad/COMET-translate/issues"
+  }
 }
