@@ -1,7 +1,7 @@
 {
   "name": "@comet-anuvaad/video-translate",
   "description": "COMET Translate microapp",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "scripts": {
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
